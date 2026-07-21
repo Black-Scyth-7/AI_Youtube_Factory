@@ -20,7 +20,7 @@ from app.config import settings
 from app.core.di import build_container
 from app.exceptions import register_exception_handlers
 from app.logging import configure_logging, get_logger
-from app.middleware import RequestContextMiddleware
+from app.middleware import RateLimitMiddleware, RequestContextMiddleware
 
 logger = get_logger(__name__)
 
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     )
 
     app.add_middleware(RequestContextMiddleware)
+    app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

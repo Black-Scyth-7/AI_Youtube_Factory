@@ -101,12 +101,63 @@ class Settings(BaseSettings):
     google_client_id: str | None = Field(default=None, repr=False)
     google_client_secret: str | None = Field(default=None, repr=False)
 
-    # -- Security (interfaces only in Phase 01) ---------------------------
+    # -- Security ---------------------------------------------------------
     secret_key: str = Field(
         default="change-me-in-production",
         min_length=8,
         repr=False,
         description="Base secret for signing. MUST be overridden outside local dev.",
+    )
+
+    # -- JWT --------------------------------------------------------------
+    jwt_secret_key: str = Field(
+        default="change-me-jwt-secret",
+        min_length=8,
+        repr=False,
+        description="Signing key for JWT access tokens.",
+    )
+    jwt_algorithm: str = Field(default="HS256")
+    access_token_expire_minutes: int = Field(default=15, ge=1)
+    refresh_token_expire_days: int = Field(default=30, ge=1)
+    jwt_issuer: str = Field(default="ai-youtube-factory")
+
+    # -- Verification / reset token lifetimes -----------------------------
+    email_verification_expire_hours: int = Field(default=24, ge=1)
+    password_reset_expire_hours: int = Field(default=2, ge=1)
+    invitation_expire_days: int = Field(default=7, ge=1)
+
+    # -- Brute-force / rate limiting --------------------------------------
+    login_max_attempts: int = Field(default=5, ge=1)
+    login_lockout_seconds: int = Field(default=900, ge=1)
+    rate_limit_enabled: bool = Field(default=True)
+
+    # -- Web / links ------------------------------------------------------
+    frontend_url: str = Field(default="http://localhost:3000")
+    cookie_secure: bool = Field(default=False)
+    cookie_domain: str | None = Field(default=None)
+
+    # -- Email (SMTP) -----------------------------------------------------
+    email_enabled: bool = Field(
+        default=False,
+        description="When false, emails are logged instead of sent (dev default).",
+    )
+    smtp_host: str = Field(default="localhost")
+    smtp_port: int = Field(default=1025)
+    smtp_user: str | None = Field(default=None, repr=False)
+    smtp_password: str | None = Field(default=None, repr=False)
+    smtp_use_tls: bool = Field(default=False)
+    email_from: str = Field(default="no-reply@ai-youtube-factory.local")
+    email_from_name: str = Field(default="AI YouTube Factory")
+
+    # -- OAuth: Google ----------------------------------------------------
+    google_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/google/callback"
+    )
+    # -- OAuth: GitHub ----------------------------------------------------
+    github_client_id: str | None = Field(default=None, repr=False)
+    github_client_secret: str | None = Field(default=None, repr=False)
+    github_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/github/callback"
     )
 
     @field_validator("cors_origins", mode="before")

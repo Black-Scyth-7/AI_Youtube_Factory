@@ -19,6 +19,13 @@ dependencies = [
     "aio-pika>=9.5",
     "dependency-injector>=4.42",
     "httpx>=0.28",
+    "argon2-cffi>=23.1",
+    "pyjwt>=2.10",
+    "email-validator>=2.2",
+    "aiosmtplib>=3.0",
+    "jinja2>=3.1",
+    "user-agents>=2.2",
+    "itsdangerous>=2.2",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +33,7 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-cov>=6.0",
+    "aiosqlite>=0.20",
     "ruff>=0.8",
     "black>=24.10",
     "mypy>=1.13",

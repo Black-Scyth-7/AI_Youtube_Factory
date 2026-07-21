@@ -6,6 +6,9 @@ Provides the columns every persistent entity should carry:
 * :class:`TimestampMixin` — ``created_at`` / ``updated_at`` audit columns.
 * :class:`SoftDeleteMixin` — ``deleted_at`` for soft deletes.
 * :class:`AuditMixin` — combines all three, the default base for entities.
+
+Uses the portable :class:`GUID` type so models run natively on PostgreSQL and
+on other backends (SQLite) for tests.
 """
 
 from __future__ import annotations
@@ -14,15 +17,16 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.types import GUID
 
 
 class UUIDPrimaryKeyMixin:
     """Adds a UUID primary key generated on the application side."""
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        GUID(),
         primary_key=True,
         default=uuid.uuid4,
     )

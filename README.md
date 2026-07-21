@@ -4,10 +4,11 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 01 — Foundation. This phase establishes the full monorepo,
-> tooling, Docker environment, CI/CD, shared packages, and a working backend +
-> web apps. Business features (AI agents, the video pipeline) arrive in later
-> phases.
+> **Status:** Phase 02 — Authentication & Identity (on the Phase 01 foundation).
+> Complete auth system: users, organizations, teams, roles/permissions with RBAC,
+> JWT + rotating refresh tokens, sessions, Google/GitHub OAuth, API keys,
+> invitations, audit logs, and transactional email. Content pipeline and AI
+> agents arrive in later phases.
 
 ---
 
@@ -93,6 +94,8 @@ make docker-down  # stop stack
 
 - [SETUP.md](docs/SETUP.md) — detailed environment setup
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design & conventions
+- [AUTHENTICATION.md](docs/AUTHENTICATION.md) — auth flows, tokens, sessions
+- [RBAC.md](docs/RBAC.md) — roles, permissions, organizations
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
 - [ROADMAP.md](docs/ROADMAP.md) — phased delivery plan

@@ -5,9 +5,9 @@ DB + tests + docs + Docker + CI) before the next begins.
 
 | Phase  | Focus                                                                                                               | Status     |
 | ------ | ------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                 | ✅ Current |
-| 02     | Data model & persistence — organizations, users, channels, videos; repositories; migrations                         | Planned    |
-| 03     | AuthN/AuthZ — JWT, OAuth (Google/YouTube), RBAC, sessions, rate limiting                                            | Planned    |
+| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                 | ✅ Done    |
+| **02** | **Authentication & identity** — users, orgs, teams, RBAC, JWT, sessions, OAuth, API keys, invitations, audit, email | ✅ Current |
+| 03     | Channels & content model — YouTube channels, projects, and the video entity graph                                   | Planned    |
 | 04     | LLM provider layer — Claude integration behind the abstraction (base/claude/factory/prompts/memory/tokenizer/cache) | Planned    |
 | 05     | Storage providers — S3 / MinIO / R2 / local                                                                         | Planned    |
 | 06     | AI agent framework — goals, memory, tools, planner, executor, reflection, retries, metrics                          | Planned    |
@@ -16,10 +16,11 @@ DB + tests + docs + Docker + CI) before the next begins.
 | 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                         | Planned    |
 | 10     | Billing, teams, plugin ecosystem, public API, mobile                                                                | Planned    |
 
-## Phase 02 — next up
+## Phase 03 — next up
 
-- Define core entities (organization, user, channel, video, job) on the ORM base
-  with UUID PKs, audit timestamps, and soft delete.
-- Implement the repository layer and service layer for those entities.
-- First Alembic migration(s); wire the readiness probe to real schema.
-- Frontend: data-backed dashboard widgets via the typed API client.
+- Define the content entity graph (YouTube channel, project, video, asset) on
+  the ORM base, org-scoped, with the same UUID/audit/soft-delete conventions.
+- Repository + service layers for those entities behind RBAC permissions.
+- Frontend: organization selection, member/team management, account settings
+  (sessions + API keys) UI, and data-backed dashboard widgets.
+- Wire the readiness probe and audit views to the live schema.
