@@ -81,3 +81,51 @@ class ServiceUnavailableError(AppError):
     status_code = 503
     code = "service_unavailable"
     message = "A required service is currently unavailable."
+
+
+class RateLimitError(AppError):
+    """The caller exceeded a rate limit."""
+
+    status_code = 429
+    code = "rate_limited"
+    message = "Too many requests."
+
+
+class StorageError(AppError):
+    """An object-storage operation failed."""
+
+    status_code = 502
+    code = "storage_error"
+    message = "A storage operation failed."
+
+
+class ExternalServiceError(AppError):
+    """An upstream third-party service failed."""
+
+    status_code = 502
+    code = "external_service_error"
+    message = "An external service request failed."
+
+
+class WorkflowError(AppError):
+    """A workflow definition or execution error."""
+
+    status_code = 422
+    code = "workflow_error"
+    message = "The workflow could not be executed."
+
+
+class RenderError(AppError):
+    """A media render job failed."""
+
+    status_code = 500
+    code = "render_error"
+    message = "A render job failed."
+
+
+class QueueError(AppError):
+    """A task/queue operation failed."""
+
+    status_code = 500
+    code = "queue_error"
+    message = "A queue operation failed."

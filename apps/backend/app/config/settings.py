@@ -131,6 +131,13 @@ class Settings(BaseSettings):
     login_lockout_seconds: int = Field(default=900, ge=1)
     rate_limit_enabled: bool = Field(default=True)
 
+    # -- Storage ----------------------------------------------------------
+    storage_backend: Literal["local", "s3", "minio", "r2", "gcs", "azure"] = Field(
+        default="local"
+    )
+    storage_local_path: str = Field(default="./var/storage")
+    storage_public_base_url: str = Field(default="http://localhost:8000/files")
+
     # -- Web / links ------------------------------------------------------
     frontend_url: str = Field(default="http://localhost:3000")
     cookie_secure: bool = Field(default=False)

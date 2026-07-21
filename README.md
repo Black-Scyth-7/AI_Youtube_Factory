@@ -4,11 +4,13 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 02 — Authentication & Identity (on the Phase 01 foundation).
-> Complete auth system: users, organizations, teams, roles/permissions with RBAC,
-> JWT + rotating refresh tokens, sessions, Google/GitHub OAuth, API keys,
-> invitations, audit logs, and transactional email. Content pipeline and AI
-> agents arrive in later phases.
+> **Status:** Phase 03 — Database & Core Infrastructure (on Phases 01–02).
+> Adds the content domain model (workspaces → projects → channels → videos,
+> media, workflows), an enhanced repository layer (pagination/filter/sort/
+> optimistic-locking/soft-delete), Redis cache, an async event bus, a task/queue
+> abstraction, storage provider abstraction with a local implementation, a
+> workflow engine foundation, feature flags, and a reusable API framework. LLM
+> provider integration and AI agents arrive in later phases.
 
 ---
 
@@ -96,6 +98,8 @@ make docker-down  # stop stack
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design & conventions
 - [AUTHENTICATION.md](docs/AUTHENTICATION.md) — auth flows, tokens, sessions
 - [RBAC.md](docs/RBAC.md) — roles, permissions, organizations
+- [DATABASE.md](docs/DATABASE.md) — schema, conventions, migrations, repositories
+- [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) — cache, events, tasks, storage, workflow
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
 - [ROADMAP.md](docs/ROADMAP.md) — phased delivery plan

@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from app.__version__ import __version__
 from app.api.v1 import api_v1_router
@@ -20,7 +21,11 @@ from app.config import settings
 from app.core.di import build_container
 from app.exceptions import register_exception_handlers
 from app.logging import configure_logging, get_logger
-from app.middleware import RateLimitMiddleware, RequestContextMiddleware
+from app.middleware import (
+    RateLimitMiddleware,
+    RequestContextMiddleware,
+    SecurityHeadersMiddleware,
+)
 
 logger = get_logger(__name__)
 
@@ -60,6 +65,8 @@ def create_app() -> FastAPI:
     )
 
     app.add_middleware(RequestContextMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware,

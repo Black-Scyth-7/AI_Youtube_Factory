@@ -14,6 +14,13 @@ from app.models.auth import (
     Session,
 )
 from app.models.base import Base
+from app.models.domain_enums import (
+    FeatureFlagScope,
+    MediaStatus,
+    ProjectStatus,
+    VideoStatus,
+    WorkflowExecutionStatus,
+)
 from app.models.enums import (
     AuditAction,
     InvitationStatus,
@@ -21,29 +28,51 @@ from app.models.enums import (
     OAuthProvider,
     SystemRole,
 )
+from app.models.infra import ActivityLog, FeatureFlag
 from app.models.invitation import Invitation
+from app.models.media import Folder, MediaFile, Tag, video_tags
 from app.models.mixins import (
+    ActorMixin,
     AuditMixin,
+    EntityMixin,
     SoftDeleteMixin,
     TimestampMixin,
     UUIDPrimaryKeyMixin,
+    VersionMixin,
 )
 from app.models.organization import Organization, OrganizationMember
 from app.models.rbac import Permission, Role, role_permissions
 from app.models.team import Team, TeamMember
 from app.models.types import GUID
 from app.models.user import Profile, User
+from app.models.video import Video, VideoVersion
+from app.models.workflow import (
+    Workflow,
+    WorkflowEdge,
+    WorkflowExecution,
+    WorkflowNode,
+)
+from app.models.workspace import Channel, Project, Workspace
 
 __all__ = [
     "GUID",
+    "ActivityLog",
+    "ActorMixin",
     "ApiKey",
     "AuditAction",
     "AuditLog",
     "AuditMixin",
     "Base",
+    "Channel",
     "EmailVerificationToken",
+    "EntityMixin",
+    "FeatureFlag",
+    "FeatureFlagScope",
+    "Folder",
     "Invitation",
     "InvitationStatus",
+    "MediaFile",
+    "MediaStatus",
     "MemberStatus",
     "OAuthAccount",
     "OAuthProvider",
@@ -52,15 +81,29 @@ __all__ = [
     "PasswordResetToken",
     "Permission",
     "Profile",
+    "Project",
+    "ProjectStatus",
     "RefreshToken",
     "Role",
     "Session",
     "SoftDeleteMixin",
     "SystemRole",
+    "Tag",
     "Team",
     "TeamMember",
     "TimestampMixin",
     "UUIDPrimaryKeyMixin",
     "User",
+    "VersionMixin",
+    "Video",
+    "VideoStatus",
+    "VideoVersion",
+    "Workflow",
+    "WorkflowEdge",
+    "WorkflowExecution",
+    "WorkflowExecutionStatus",
+    "WorkflowNode",
+    "Workspace",
     "role_permissions",
+    "video_tags",
 ]

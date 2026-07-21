@@ -7,6 +7,8 @@ from fastapi import APIRouter
 from app.api.v1.routes import (
     api_keys,
     auth,
+    content,
+    feature_flags,
     health,
     invitations,
     meta,
@@ -24,3 +26,5 @@ api_v1_router.include_router(organizations.router)
 api_v1_router.include_router(invitations.router)
 api_v1_router.include_router(api_keys.router)
 api_v1_router.include_router(sessions.router)
+api_v1_router.include_router(content.router)
+api_v1_router.include_router(feature_flags.router)

@@ -15,9 +15,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, Integer, func
+from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 from app.models.types import GUID
 
@@ -64,4 +65,39 @@ class SoftDeleteMixin:
 
 
 class AuditMixin(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
-    """Convenience mixin combining UUID PK, timestamps, and soft delete."""
+    """Convenience mixin combining UUID PK, timestamps, and soft delete.
+
+    Used by the Phase 02 identity models. New Phase 03 domain entities use
+    :class:`EntityMixin`, which additionally carries optimistic-lock versioning
+    and ``created_by`` / ``updated_by`` actor columns.
+    """
+
+
+class VersionMixin:
+    """Adds an integer ``version`` column for optimistic concurrency control."""
+
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+
+
+class ActorMixin:
+    """Adds ``created_by`` / ``updated_by`` user-reference columns."""
+
+    created_by: Mapped[uuid.UUID | None] = mapped_column(GUID(), nullable=True)
+    updated_by: Mapped[uuid.UUID | None] = mapped_column(GUID(), nullable=True)
+
+
+class EntityMixin(
+    UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, VersionMixin, ActorMixin
+):
+    """Full audit surface for domain entities.
+
+    Combines UUID PK, timestamps, soft delete, optimistic-lock ``version``, and
+    actor columns. The mapper is configured to use ``version`` for optimistic
+    locking so concurrent ORM updates raise ``StaleDataError``.
+    """
+
+    @declared_attr.directive
+    def __mapper_args__(cls) -> dict[str, Any]:  # noqa: N805
+        return {"version_id_col": cls.version}

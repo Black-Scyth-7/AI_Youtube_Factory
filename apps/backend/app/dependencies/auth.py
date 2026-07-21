@@ -70,6 +70,13 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def require_superuser(user: CurrentUser) -> User:
+    """Ensure the caller is a platform superuser."""
+    if not user.is_superuser:
+        raise ForbiddenError("Superuser privileges are required.")
+    return user
+
+
 def require_permission(permission: str):  # type: ignore[no-untyped-def]
     """Return a dependency enforcing ``permission`` on the path organization.
 
