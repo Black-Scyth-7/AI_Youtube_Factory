@@ -21,11 +21,14 @@ COPY --from=deps /usr/local /usr/local
 COPY apps/backend/ ./
 
 RUN groupadd --system app && useradd --system --gid app --home /app app \
+    && chmod +x docker-entrypoint.sh \
     && chown -R app:app /app
 USER app
 
 EXPOSE 8000
-HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
     CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health').status==200 else 1)"
 
+# Entrypoint runs `alembic upgrade head`, then execs the CMD (or compose command).
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

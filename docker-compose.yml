@@ -49,7 +49,9 @@ services:
     networks: [ayf]
 
   rabbitmq:
-    image: rabbitmq:4-management-alpine
+    # RabbitMQ 3.13 (LTS) is the compatible pairing for Celery: 4.x disables the
+    # `transient_nonexcl_queues` feature Celery's internal queues depend on.
+    image: rabbitmq:3.13-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -71,7 +73,7 @@ services:
       dockerfile: docker/backend.Dockerfile
     environment: *backend-env
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -99,7 +101,7 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       NEXT_PUBLIC_APP_ENV: development
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
     networks: [ayf]
@@ -112,7 +114,7 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       NEXT_PUBLIC_APP_ENV: development
     ports:
-      - "3001:3001"
+      - "${ADMIN_PORT:-3001}:3001"
     depends_on:
       - backend
     networks: [ayf]
