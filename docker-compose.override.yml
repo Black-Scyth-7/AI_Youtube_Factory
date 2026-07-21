@@ -1,0 +1,21 @@
+# Development overrides — applied automatically by `docker compose up`.
+#
+# Mounts source into the backend and worker containers and enables hot reload so
+# code changes are picked up without rebuilding. The frontend/admin images are
+# production-oriented (standalone); use `pnpm dev` locally for hot reload there.
+
+services:
+  backend:
+    command:
+      ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    volumes:
+      - ./apps/backend/app:/app/app
+    environment:
+      DEBUG: "true"
+      LOG_JSON: "false"
+
+  worker:
+    command:
+      ["celery", "-A", "worker.celery_app:celery_app", "worker", "--loglevel=DEBUG"]
+    volumes:
+      - ./apps/worker/worker:/app/worker

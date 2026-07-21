@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/.venv
+**/coverage
+pnpm-lock.yaml
+apps/backend
+apps/worker
+python

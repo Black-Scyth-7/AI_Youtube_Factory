@@ -1,0 +1,41 @@
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+
+# --- Node ---
+node_modules/
+.pnpm-store/
+.turbo/
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+coverage/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Docker ---
+.docker/

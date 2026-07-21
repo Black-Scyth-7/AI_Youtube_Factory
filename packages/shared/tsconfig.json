@@ -1,0 +1,9 @@
+{
+  "extends": "@ayf/typescript-config/react-library.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "src"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

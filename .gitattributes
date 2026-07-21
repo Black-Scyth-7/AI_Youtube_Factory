@@ -1,0 +1,21 @@
+# Normalize line endings to LF across platforms.
+* text=auto eol=lf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.pdf binary
+
+# Language hints for GitHub Linguist / diffs.
+*.py text diff=python
+*.ts text
+*.tsx text
+
+# Lockfiles: keep but collapse in diffs.
+pnpm-lock.yaml linguist-generated=true -diff

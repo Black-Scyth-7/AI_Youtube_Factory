@@ -1,0 +1,9 @@
+{
+  "extends": "@ayf/typescript-config/react-library.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src", "tailwind-preset.ts"],
+  "exclude": ["node_modules", "dist"]
+}
