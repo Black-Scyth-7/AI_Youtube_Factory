@@ -11,6 +11,7 @@ from app.api.v1.routes import (
     feature_flags,
     health,
     invitations,
+    llm,
     meta,
     organizations,
     sessions,
@@ -28,3 +29,4 @@ api_v1_router.include_router(api_keys.router)
 api_v1_router.include_router(sessions.router)
 api_v1_router.include_router(content.router)
 api_v1_router.include_router(feature_flags.router)
+api_v1_router.include_router(llm.router)

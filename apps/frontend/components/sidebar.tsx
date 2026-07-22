@@ -1,6 +1,16 @@
 "use client";
 
-import { LayoutDashboard, Settings, Sparkles, Video, Workflow } from "lucide-react";
+import {
+  BarChart3,
+  BrainCircuit,
+  FileText,
+  LayoutDashboard,
+  MessagesSquare,
+  Settings,
+  Sparkles,
+  Video,
+  Workflow,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +21,10 @@ const NAV_ITEMS = [
   { href: "/dashboard/videos", label: "Videos", icon: Video },
   { href: "/dashboard/agents", label: "Agents", icon: Sparkles },
   { href: "/dashboard/workflows", label: "Workflows", icon: Workflow },
+  { href: "/dashboard/llm", label: "LLM", icon: BrainCircuit },
+  { href: "/dashboard/llm/prompts", label: "Prompts", icon: FileText },
+  { href: "/dashboard/llm/playground", label: "Playground", icon: MessagesSquare },
+  { href: "/dashboard/llm/usage", label: "Usage & cost", icon: BarChart3 },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ] as const;
 

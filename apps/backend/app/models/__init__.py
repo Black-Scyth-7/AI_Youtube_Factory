@@ -30,6 +30,19 @@ from app.models.enums import (
 )
 from app.models.infra import ActivityLog, FeatureFlag
 from app.models.invitation import Invitation
+from app.models.llm import (
+    Conversation,
+    ConversationMessage,
+    ConversationSummary,
+    LLMCostRollup,
+    LLMRequest,
+    LLMUsageRollup,
+    ModelConfiguration,
+    PromptTemplate,
+    PromptVersion,
+    ProviderConfiguration,
+    ToolExecution,
+)
 from app.models.media import Folder, MediaFile, Tag, video_tags
 from app.models.mixins import (
     ActorMixin,
@@ -64,6 +77,9 @@ __all__ = [
     "AuditMixin",
     "Base",
     "Channel",
+    "Conversation",
+    "ConversationMessage",
+    "ConversationSummary",
     "EmailVerificationToken",
     "EntityMixin",
     "FeatureFlag",
@@ -71,9 +87,13 @@ __all__ = [
     "Folder",
     "Invitation",
     "InvitationStatus",
+    "LLMCostRollup",
+    "LLMRequest",
+    "LLMUsageRollup",
     "MediaFile",
     "MediaStatus",
     "MemberStatus",
+    "ModelConfiguration",
     "OAuthAccount",
     "OAuthProvider",
     "Organization",
@@ -83,6 +103,9 @@ __all__ = [
     "Profile",
     "Project",
     "ProjectStatus",
+    "PromptTemplate",
+    "PromptVersion",
+    "ProviderConfiguration",
     "RefreshToken",
     "Role",
     "Session",
@@ -92,6 +115,7 @@ __all__ = [
     "Team",
     "TeamMember",
     "TimestampMixin",
+    "ToolExecution",
     "UUIDPrimaryKeyMixin",
     "User",
     "VersionMixin",

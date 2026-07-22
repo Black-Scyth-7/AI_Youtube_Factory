@@ -101,6 +101,33 @@ class Settings(BaseSettings):
     google_client_id: str | None = Field(default=None, repr=False)
     google_client_secret: str | None = Field(default=None, repr=False)
 
+    # -- LLM framework ----------------------------------------------------
+    llm_default_provider: str = Field(
+        default="anthropic",
+        description="Provider slug used when a request does not specify one.",
+    )
+    llm_default_model: str = Field(
+        default="claude-opus-4-8",
+        description="Default Claude model. Never hardcode model names in code.",
+    )
+    llm_max_tokens: int = Field(default=4096, ge=1)
+    # Sampling params: applied only to models that accept them. Opus 4.7/4.8,
+    # Sonnet 5, and Fable 5 reject temperature/top_p/top_k (the provider omits
+    # them for those models). None means "let the model default".
+    llm_temperature: float | None = Field(default=None, ge=0.0, le=1.0)
+    llm_top_p: float | None = Field(default=None, ge=0.0, le=1.0)
+    llm_top_k: int | None = Field(default=None, ge=0)
+    llm_thinking: Literal["adaptive", "off"] = Field(default="adaptive")
+    llm_timeout_seconds: float = Field(default=120.0, gt=0)
+    llm_max_retries: int = Field(default=3, ge=0)
+    llm_streaming_default: bool = Field(default=False)
+    llm_system_prompt: str | None = Field(default=None)
+    llm_cache_enabled: bool = Field(default=True)
+    llm_cache_ttl_seconds: int = Field(default=3600, ge=1)
+    llm_rate_limit_rpm: int = Field(default=60, ge=1)
+    llm_rate_limit_concurrent: int = Field(default=10, ge=1)
+    llm_fallback_model: str | None = Field(default=None)
+
     # -- Security ---------------------------------------------------------
     secret_key: str = Field(
         default="change-me-in-production",

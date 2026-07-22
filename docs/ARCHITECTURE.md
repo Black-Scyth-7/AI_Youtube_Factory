@@ -25,14 +25,21 @@ FastAPI app assembled by `create_app()`:
 - `middleware/` — assigns request id / trace id, measures duration.
 - `exceptions/` — typed `AppError` hierarchy + global handlers → one error
   envelope (`{ "error": { code, message, details, request_id } }`).
-- `core/llm`, `core/storage` — provider interfaces + factories (implementations
-  in later phases).
+- `core/llm` — **Claude LLM framework** (Phase 04): provider abstraction
+  (Anthropic + deterministic mock) behind a registry, prompt engine, conversation
+  memory, structured output, streaming, tools, retry/circuit-breaker, token
+  accounting, cost tracking, caching, and rate limiting. No AI code calls
+  Anthropic directly. See [LLM.md](./LLM.md).
+- `core/storage` — storage provider interface + factory (implementations in a
+  later phase).
 - `core/di` — DI container wiring settings, engine, session factory.
 - `models/` — declarative `Base` + mixins: **UUID PKs, created/updated audit
   timestamps, soft delete**, deterministic constraint naming for stable Alembic
   autogenerate.
 - `db/` — async engine + transactional session scope.
-- `api/v1/` — versioned routes: root, version, health, live, ready.
+- `api/v1/` — versioned routes: root, version, health, live, ready, auth &
+  identity, and the LLM framework (`/llm/*`: chat, stream, models, prompts,
+  conversations, usage, costs).
 
 ### Worker (`apps/worker`)
 
@@ -44,8 +51,10 @@ queue**. Beat schedule reserved for future AI jobs.
 
 Next.js App Router. Shared `@ayf/ui` design system (CSS-variable theming, dark
 mode default via `next-themes`), React Query, Zustand, Framer Motion. Frontend
-ships the landing page, dashboard shell (sidebar + top nav), auth layout, and
-the standard `not-found` / `loading` / `error` routes.
+ships the landing page, dashboard shell (sidebar + top nav), auth layout, the
+LLM pages (model catalog & provider health, prompt library/editor, streaming
+playground, usage & cost dashboard, conversation viewer), and the standard
+`not-found` / `loading` / `error` routes.
 
 ## Data flow (target pipeline)
 

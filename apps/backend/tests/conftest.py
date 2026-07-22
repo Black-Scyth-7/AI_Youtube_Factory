@@ -9,6 +9,8 @@ from collections.abc import AsyncIterator, Iterator
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("LOG_JSON", "false")
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+# Use the deterministic mock LLM provider in tests (no API key / network).
+os.environ.setdefault("LLM_DEFAULT_PROVIDER", "mock")
 
 import pytest
 import pytest_asyncio

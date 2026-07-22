@@ -4,13 +4,16 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 03 — Database & Core Infrastructure (on Phases 01–02).
-> Adds the content domain model (workspaces → projects → channels → videos,
-> media, workflows), an enhanced repository layer (pagination/filter/sort/
-> optimistic-locking/soft-delete), Redis cache, an async event bus, a task/queue
-> abstraction, storage provider abstraction with a local implementation, a
-> workflow engine foundation, feature flags, and a reusable API framework. LLM
-> provider integration and AI agents arrive in later phases.
+> **Status:** Phase 04 — Claude LLM Framework (on Phases 01–03).
+> Adds the shared AI infrastructure every future capability depends on: a
+> provider abstraction (Claude + a deterministic mock) behind a registry, a
+> Jinja prompt engine with DB-backed versioning, conversation memory, structured
+> output with validation retries, streaming (SSE), tool calling, a retry engine
+> with circuit breaker and fallback, per-user/org/agent/project token
+> accounting, cost tracking, Redis caching, and rate limiting — exposed via
+> `/api/v1/llm/*` and dashboard pages. **No AI feature calls Anthropic directly;
+> everything goes through the provider layer.** AI agents and the video pipeline
+> arrive in later phases.
 
 ---
 
@@ -100,6 +103,11 @@ make docker-down  # stop stack
 - [RBAC.md](docs/RBAC.md) — roles, permissions, organizations
 - [DATABASE.md](docs/DATABASE.md) — schema, conventions, migrations, repositories
 - [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) — cache, events, tasks, storage, workflow
+- [LLM.md](docs/LLM.md) — Claude LLM framework: providers, manager, accounting, API
+- [PromptEngine.md](docs/PromptEngine.md) — prompt rendering, variables, versioning
+- [Conversation.md](docs/Conversation.md) — conversations: runtime + persistence
+- [Memory.md](docs/Memory.md) — working-context trimming & summarization
+- [Providers.md](docs/Providers.md) — provider contract, registry, adding a provider
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
 - [ROADMAP.md](docs/ROADMAP.md) — phased delivery plan
