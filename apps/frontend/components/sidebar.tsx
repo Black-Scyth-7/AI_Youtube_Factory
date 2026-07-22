@@ -2,14 +2,17 @@
 
 import {
   BarChart3,
+  BookOpen,
   BrainCircuit,
   FileText,
+  Gauge,
   LayoutDashboard,
   MessagesSquare,
   Settings,
   Sparkles,
   Video,
   Workflow,
+  Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +23,9 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/videos", label: "Videos", icon: Video },
   { href: "/dashboard/agents", label: "Agents", icon: Sparkles },
+  { href: "/dashboard/agents/tools", label: "Agent tools", icon: Wrench },
+  { href: "/dashboard/agents/knowledge", label: "Knowledge", icon: BookOpen },
+  { href: "/dashboard/agents/metrics", label: "Agent metrics", icon: Gauge },
   { href: "/dashboard/workflows", label: "Workflows", icon: Workflow },
   { href: "/dashboard/llm", label: "LLM", icon: BrainCircuit },
   { href: "/dashboard/llm/prompts", label: "Prompts", icon: FileText },

@@ -4,16 +4,17 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 04 — Claude LLM Framework (on Phases 01–03).
-> Adds the shared AI infrastructure every future capability depends on: a
-> provider abstraction (Claude + a deterministic mock) behind a registry, a
-> Jinja prompt engine with DB-backed versioning, conversation memory, structured
-> output with validation retries, streaming (SSE), tool calling, a retry engine
-> with circuit breaker and fallback, per-user/org/agent/project token
-> accounting, cost tracking, Redis caching, and rate limiting — exposed via
-> `/api/v1/llm/*` and dashboard pages. **No AI feature calls Anthropic directly;
-> everything goes through the provider layer.** AI agents and the video pipeline
-> arrive in later phases.
+> **Status:** Phase 05 — AI Agent Framework (on Phases 01–04).
+> Adds a generic, provider-independent autonomous agent platform: `BaseAgent`
+> (plan → reason → execute → reflect → learn → evaluate) with a manager,
+> registry, planning/reasoning/execution engines, reflection and six-dimension
+> evaluation, scoped memory, a searchable knowledge base, a validated tool
+> framework, execution policies and a sandbox, a scheduler, an in-process
+> workflow engine, multi-agent coordination, monitoring, and agent events —
+> exposed via `/api/v1` (`/agents`, `/goals`, `/tasks`, `/tools`, …) and
+> dashboard pages. **Agents reach models only through the Phase 04 LLM
+> framework**, so the whole engine runs offline against the mock provider. The
+> video pipeline and domain agents build on this in later phases.
 
 ---
 
@@ -106,8 +107,15 @@ make docker-down  # stop stack
 - [LLM.md](docs/LLM.md) — Claude LLM framework: providers, manager, accounting, API
 - [PromptEngine.md](docs/PromptEngine.md) — prompt rendering, variables, versioning
 - [Conversation.md](docs/Conversation.md) — conversations: runtime + persistence
-- [Memory.md](docs/Memory.md) — working-context trimming & summarization
+- [Memory.md](docs/Memory.md) — working-context trimming, summarization, agent memory
 - [Providers.md](docs/Providers.md) — provider contract, registry, adding a provider
+- [AgentFramework.md](docs/AgentFramework.md) — autonomous agent platform overview
+- [Planning.md](docs/Planning.md) — planning, reasoning & execution engines
+- [Reflection.md](docs/Reflection.md) — reflection, evaluation & monitoring
+- [Tools.md](docs/Tools.md) — agent tool framework & execution policies
+- [Knowledge.md](docs/Knowledge.md) — agent knowledge base
+- [Workflow.md](docs/Workflow.md) — agent workflow runtime
+- [API.md](docs/API.md) — AI API reference (agents + LLM)
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
 - [ROADMAP.md](docs/ROADMAP.md) — phased delivery plan

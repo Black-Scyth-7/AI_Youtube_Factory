@@ -25,6 +25,7 @@ PERMISSIONS: dict[str, str] = {
     "video.publish": "Publish videos",
     "prompt.edit": "Edit prompts",
     "agent.run": "Run AI agents",
+    "agent.manage": "Create, configure, and manage AI agents",
     "analytics.read": "Read analytics",
     "api_key.manage": "Create and revoke API keys",
     "audit.read": "Read audit logs",
@@ -43,6 +44,7 @@ _MANAGER_PERMISSIONS = frozenset(
         "video.publish",
         "prompt.edit",
         "agent.run",
+        "agent.manage",
         "analytics.read",
     }
 )

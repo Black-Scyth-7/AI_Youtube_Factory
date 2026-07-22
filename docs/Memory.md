@@ -45,3 +45,20 @@ Memory is deliberately provider-neutral and offline-friendly: trimming and token
 estimation never call a provider, and summarization is an injected dependency.
 This keeps the working-context logic fully testable with the `MockProvider` and
 in-memory database. See [LLM.md](./LLM.md) for how memory fits the request flow.
+
+## Agent memory (Phase 05)
+
+The agent framework adds `AgentMemoryStore` (`app/agents/memory/`), a **scoped**
+working memory that complements the conversation memory above:
+
+- **Scopes** — `short_term` (working notes, e.g. reasoning thoughts), `task`
+  (per-task outputs), `agent` (cross-task memory such as accumulated `lessons`),
+  and `workspace` (shared across a coordinated multi-agent run).
+- **Conversation buffer** — reuses the `WindowMemory` above for token-budgeted
+  trimming and optional summarization.
+- **Persistence** — `MemoryService.snapshot()` writes a run's scoped memory to the
+  `agent_memory` table; the memory explorer reads it back.
+
+Knowledge (facts/policies an agent consults) is deliberately *separate* from
+memory — see [Knowledge.md](./Knowledge.md). Durable/vector memory plugs in behind
+the `MemoryStore` / `LongTermMemory` protocols in a later phase.

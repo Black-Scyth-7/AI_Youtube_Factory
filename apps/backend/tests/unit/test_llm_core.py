@@ -20,6 +20,7 @@ from app.core.llm.tokenizer import heuristic_token_count
 from app.core.llm.tools import Tool, ToolRegistry
 from pydantic import BaseModel
 
+
 # -- Prompt engine -------------------------------------------------------
 def test_prompt_render_with_variables() -> None:
     engine = PromptEngine()

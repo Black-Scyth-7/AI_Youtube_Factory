@@ -32,14 +32,20 @@ FastAPI app assembled by `create_app()`:
   Anthropic directly. See [LLM.md](./LLM.md).
 - `core/storage` — storage provider interface + factory (implementations in a
   later phase).
+- `agents/` — **AI Agent framework** (Phase 05): a generic, provider-independent
+  platform (`BaseAgent`, manager, registry, planner, reasoner, executor,
+  reflection, evaluation, memory, knowledge, tools, policies, scheduler,
+  workflows, multi-agent coordination, monitoring). Agents reach models only
+  through `core/llm`. See [AgentFramework.md](./AgentFramework.md).
 - `core/di` — DI container wiring settings, engine, session factory.
 - `models/` — declarative `Base` + mixins: **UUID PKs, created/updated audit
   timestamps, soft delete**, deterministic constraint naming for stable Alembic
   autogenerate.
 - `db/` — async engine + transactional session scope.
 - `api/v1/` — versioned routes: root, version, health, live, ready, auth &
-  identity, and the LLM framework (`/llm/*`: chat, stream, models, prompts,
-  conversations, usage, costs).
+  identity, the LLM framework (`/llm/*`), and the agent framework (`/agents`,
+  `/goals`, `/tasks`, `/tools`, `/reflections`, `/evaluations`, `/workflows`,
+  `/metrics`, `/knowledge`).
 
 ### Worker (`apps/worker`)
 

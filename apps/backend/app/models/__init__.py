@@ -4,6 +4,23 @@ Importing every model module here registers it on ``Base.metadata`` so Alembic
 autogenerate and metadata-create see the full schema.
 """
 
+from app.models.agent import (
+    Agent,
+    AgentConfiguration,
+    AgentEvaluation,
+    AgentGoal,
+    AgentMemoryRecord,
+    AgentMetric,
+    AgentPlan,
+    AgentReflection,
+    AgentTaskExecution,
+    AgentTaskRecord,
+    AgentToolDefinition,
+    AgentToolExecution,
+    AgentVersion,
+    KnowledgeDocument,
+    WorkflowRun,
+)
 from app.models.api_key import ApiKey
 from app.models.audit import AuditLog
 from app.models.auth import (
@@ -71,6 +88,19 @@ __all__ = [
     "GUID",
     "ActivityLog",
     "ActorMixin",
+    "Agent",
+    "AgentConfiguration",
+    "AgentEvaluation",
+    "AgentGoal",
+    "AgentMemoryRecord",
+    "AgentMetric",
+    "AgentPlan",
+    "AgentReflection",
+    "AgentTaskExecution",
+    "AgentTaskRecord",
+    "AgentToolDefinition",
+    "AgentToolExecution",
+    "AgentVersion",
     "ApiKey",
     "AuditAction",
     "AuditLog",
@@ -87,6 +117,7 @@ __all__ = [
     "Folder",
     "Invitation",
     "InvitationStatus",
+    "KnowledgeDocument",
     "LLMCostRollup",
     "LLMRequest",
     "LLMUsageRollup",
@@ -127,6 +158,7 @@ __all__ = [
     "WorkflowExecution",
     "WorkflowExecutionStatus",
     "WorkflowNode",
+    "WorkflowRun",
     "Workspace",
     "role_permissions",
     "video_tags",
