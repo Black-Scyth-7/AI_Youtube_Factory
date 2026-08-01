@@ -3,18 +3,18 @@
 Phased delivery. Each phase meets a Definition of Done (backend + frontend +
 DB + tests + docs + Docker + CI) before the next begins.
 
-| Phase  | Focus                                                                                                                                                                                                      | Status         |
-| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                                                                                                        | ✅ Done        |
-| **02** | **Authentication & identity** — users, orgs, teams, RBAC, JWT, sessions, OAuth, API keys, invitations, audit, email                                                                                        | ✅ Done        |
-| **03** | **Database & core infrastructure** — domain models, enhanced repositories, cache, events, tasks, storage, workflow, feature flags, API framework                                                           | ✅ Done        |
-| **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting   | ✅ Done        |
-| **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Current     |
-| **06** | **Storage providers** — S3 / MinIO / R2 / GCS / Azure behind the existing interface                                                                                                                        | 🚧 In progress |
-| 07     | Workflow engine (visual) — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                               | Planned        |
-| 08     | Video pipeline — research → publish → analytics → learning                                                                                                                                                 | Planned        |
-| 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned        |
-| 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned        |
+| Phase  | Focus                                                                                                                                                                                                      | Status  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                                                                                                        | ✅ Done |
+| **02** | **Authentication & identity** — users, orgs, teams, RBAC, JWT, sessions, OAuth, API keys, invitations, audit, email                                                                                        | ✅ Done |
+| **03** | **Database & core infrastructure** — domain models, enhanced repositories, cache, events, tasks, storage, workflow, feature flags, API framework                                                           | ✅ Done |
+| **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting   | ✅ Done |
+| **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Done |
+| **06** | **Storage providers & catalog domain** — S3/MinIO/R2/GCS/Azure, billing, notifications, jobs                                                                                                               | ✅ Done |
+| 07     | Workflow engine (visual) — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                               | Planned |
+| 08     | Video pipeline — research → publish → analytics → learning                                                                                                                                                 | Planned |
+| 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned |
+| 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned |
 
 ## Phase 04 — delivered
 
@@ -63,7 +63,7 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
 [Knowledge.md](./Knowledge.md), [Workflow.md](./Workflow.md), and
 [API.md](./API.md).
 
-## Phase 06 — in progress
+## Phase 06 — delivered
 
 **Delivered — storage providers**
 
@@ -85,8 +85,22 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
   real MinIO instance — byte-exact round trips, overwrite, `NotFoundError`,
   delete-absent as a no-op, and a presigned URL fetched over HTTP.
 
-**Remaining**
+**Delivered — catalog models and services**
 
-- The additional catalog models (subscription/plan/invoice/payment,
-  notification/webhook, cost/usage records, render/queue jobs) and their
-  services, built on the same repository/service/event scaffolding.
+- Billing: `Plan`, `Subscription`, `Invoice`, `Payment`, plus `UsageRecord` and
+  `CostRecord`. Money is stored as integer minor units, never floats; overage
+  rounds `ROUND_HALF_UP` at the single point a fractional total becomes a
+  charge. Closing a period stamps the usage it consumed, so invoicing twice
+  cannot bill the same usage again, and `record_payment` is idempotent on the
+  provider's payment id so a replayed webhook cannot double-credit an invoice.
+- Notifications: `Notification`, `NotificationPreference`, and outbound
+  `Webhook`/`WebhookDelivery`. Webhook secrets are returned once and stored
+  hashed; deliveries back off on a fixed schedule and are marked exhausted
+  rather than retried forever.
+- Jobs: `QueueJob` as the durable record of background work — separate from the
+  broker that carries it — and `RenderJob` for media. Both success and failure
+  publish `RenderFinished`, distinguished by its `success` flag.
+- Migration `0005_catalog` adds twelve tables. Verified against PostgreSQL 17:
+  `upgrade head` creates them all and `downgrade 0004_agent` removes them.
+- 45 service tests covering the quota, invoicing, refund, retry and state
+  machine rules, and [Catalog.md](./Catalog.md).

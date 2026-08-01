@@ -40,3 +40,80 @@ class FeatureFlagScope(StrEnum):
     GLOBAL = "global"
     ORGANIZATION = "organization"
     USER = "user"
+
+
+# -- Billing ------------------------------------------------------------------
+class BillingInterval(StrEnum):
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+
+class SubscriptionStatus(StrEnum):
+    TRIALING = "trialing"
+    ACTIVE = "active"
+    PAST_DUE = "past_due"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+
+
+class InvoiceStatus(StrEnum):
+    DRAFT = "draft"
+    OPEN = "open"
+    PAID = "paid"
+    VOID = "void"
+    UNCOLLECTIBLE = "uncollectible"
+
+
+class PaymentStatus(StrEnum):
+    PENDING = "pending"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    REFUNDED = "refunded"
+
+
+# -- Notifications ------------------------------------------------------------
+class NotificationChannel(StrEnum):
+    IN_APP = "in_app"
+    EMAIL = "email"
+    WEBHOOK = "webhook"
+
+
+class NotificationStatus(StrEnum):
+    PENDING = "pending"
+    SENT = "sent"
+    READ = "read"
+    FAILED = "failed"
+
+
+class WebhookDeliveryStatus(StrEnum):
+    PENDING = "pending"
+    DELIVERED = "delivered"
+    FAILED = "failed"
+    EXHAUSTED = "exhausted"
+
+
+# -- Jobs ---------------------------------------------------------------------
+class JobStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class RenderJobKind(StrEnum):
+    AUDIO = "audio"
+    VIDEO = "video"
+    THUMBNAIL = "thumbnail"
+    SUBTITLES = "subtitles"
+
+
+# -- Usage --------------------------------------------------------------------
+class UsageMetric(StrEnum):
+    """Billable units. LLM tokens are tracked separately in ``llm_request``."""
+
+    VIDEO_RENDER = "video_render"
+    STORAGE_GB_HOURS = "storage_gb_hours"
+    PUBLISH = "publish"
+    AGENT_RUN = "agent_run"
+    API_CALL = "api_call"
