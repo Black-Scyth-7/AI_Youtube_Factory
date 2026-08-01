@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events import UploadCompleted, get_event_bus
 from app.core.pipeline import ProviderKind, get_provider
+from app.core.plugins import HookName, dispatch
 from app.core.storage import get_storage
 from app.exceptions.base import ConflictError, NotFoundError, ValidationError
 from app.models.domain_enums import (
@@ -279,14 +280,32 @@ class VideoPipelineService:
         if not video_key:
             raise ValidationError("Nothing has been rendered for this run yet.")
 
+        # Plugins get to shape the listing before it goes out. Dispatch never
+        # raises: a third-party plugin failing must not fail a publish, so a
+        # broken one is recorded and the original values are used.
+        listing, _ = await dispatch(
+            HookName.BEFORE_PUBLISH,
+            {
+                "title": video.title,
+                "description": video.description,
+                "tags": list(tags or []),
+                "platform": platform,
+            },
+        )
+        title = listing.get("title") or video.title
+        description = listing.get("description") if "description" in listing else None
+        final_tags = listing.get("tags")
+        if not isinstance(final_tags, list):
+            final_tags = list(tags or [])
+
         publication = await self.publications.for_video(video.id, platform)
         if publication is None:
             publication = Publication(
                 video_id=video.id,
                 platform=platform,
-                title=video.title,
-                description=video.description,
-                tags=tags or [],
+                title=title,
+                description=description if description is not None else video.description,
+                tags=final_tags,
             )
             self.session.add(publication)
             await self.session.flush()

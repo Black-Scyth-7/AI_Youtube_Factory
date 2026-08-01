@@ -14,7 +14,7 @@ DB + tests + docs + Docker + CI) before the next begins.
 | **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | ✅ Done |
 | **08** | **Video pipeline** — research → script → render → publish → analytics → learning                                                                                                                           | ✅ Done |
 | **09** | **Observability** — metrics, W3C tracing, OpenTelemetry export, Prometheus, Grafana, alerting                                                                                                              | ✅ Done |
-| 10     | **Billing** ✅ · plugin ecosystem, public API, mobile                                                                                                                                                      | Partial |
+| **10** | **Billing, plugin ecosystem, public API, mobile**                                                                                                                                                          | ✅ Done |
 
 ## Phase 04 — delivered
 
@@ -177,7 +177,7 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
   deployments that cannot restrict it at the network layer.
 - 72 tests and [Observability.md](./Observability.md).
 
-## Phase 10 — in progress
+## Phase 10 — delivered
 
 **Billing — delivered.** Phase 06 left the models and services with no way to
 reach them; there was no billing API at all.
@@ -206,4 +206,37 @@ reach them; there was no billing API at all.
   the field just stays null forever.
 - A `/dashboard/billing` console, 35 tests, and [Billing.md](./Billing.md).
 
-**Remaining in this phase:** plugin ecosystem, public API, mobile.
+**Public API.** `ApiKeyService.authenticate` already existed and nothing called
+it — keys could be created and listed but could not authenticate anything.
+Adds `/api/public/v1`: a versioned surface with its own payload models,
+authenticated by scoped key, with tenancy verified on every object rather than
+relying on unguessable ids. A write scope does not imply the matching read
+scope, an unknown scope is refused at creation instead of silently dropped, and
+another organization's object is a 404 rather than a 403 — confirming an id
+exists is itself a disclosure. Two rate-limiter defects fixed on the way: one
+transient Redis error permanently disabled rate limiting for the life of the
+process, and there was no `Retry-After`, so a limited client's usual guess is
+"retry immediately".
+
+**Plugin ecosystem.** Manifest-first, so the host validates before it executes.
+A plugin cannot crash the host (exception boundary), hang it (per-plugin
+timeout), or reach what it never declared (capabilities). Network and LLM access
+are refused unless an operator allow-lists the plugin by name, so a formatter
+cannot exfiltrate anything even if hostile. Handlers get a copy of a plain dict,
+never an ORM entity — a live entity would let a plugin write through a
+relationship, outside the capability model entirely. Three built-ins ship, and
+the publish chain is wired into the pipeline.
+
+**Mobile.** Delivered as an installable PWA, not a native app — stated plainly
+because there is no store build here and nothing produces one. The actual defect
+was that the sidebar is `hidden md:block`, so below that breakpoint the
+dashboard had *no navigation at all*. Adds a bottom bar and sheet, a shared
+nav-item list (two copies had already drifted — the billing console shipped
+unreachable), a web manifest with a maskable icon, and a service worker that
+caches the app shell and **never** API responses: Cache Storage is shared across
+accounts on a device, so caching them would serve one user's data to the next.
+
+96 tests across billing, the public API, and plugins, plus
+[Billing.md](./Billing.md),
+[PublicAPI.md](./PublicAPI.md), [Plugins.md](./Plugins.md), and
+[Mobile.md](./Mobile.md).

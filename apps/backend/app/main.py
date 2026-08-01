@@ -17,9 +17,11 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from app.__version__ import __version__
 from app.api.metrics import router as metrics_router
+from app.api.public import public_v1_router
 from app.api.v1 import api_v1_router
 from app.config import settings
 from app.core.di import build_container
+from app.core.plugins import register_builtin_plugins
 from app.exceptions import register_exception_handlers
 from app.logging import configure_logging, get_logger
 from app.middleware import (
@@ -38,6 +40,8 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Manage application startup and shutdown."""
     configure_tracing()
+    if settings.plugins_enabled:
+        register_builtin_plugins()
     # A constant-1 gauge, the standard way to expose build metadata: joining on
     # it labels any dashboard panel with the version that produced the data.
     app_info.set(1.0, version=__version__, environment=settings.environment.value)
@@ -93,6 +97,9 @@ def create_app() -> FastAPI:
     app.include_router(api_v1_router, prefix=settings.api_v1_prefix)
     # Unversioned and at the root: scrapers default to /metrics.
     app.include_router(metrics_router)
+    # The public API carries its own version in the path, so it is mounted at
+    # the root rather than under the internal API's prefix.
+    app.include_router(public_v1_router)
 
     return app
 

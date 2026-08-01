@@ -21,6 +21,11 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+#: Marks a credential as an API key. Session JWTs travel on the same
+#: Authorization header, so something has to tell them apart.
+API_KEY_PREFIX = "ayf_"
+
+
 def generate_api_key() -> tuple[str, str, str]:
     """Generate an API key.
 
@@ -28,7 +33,7 @@ def generate_api_key() -> tuple[str, str, str]:
     shown to the user exactly once, ``prefix`` is a non-secret identifier stored
     for lookup, and ``secret_hash`` is the value persisted.
     """
-    prefix = "ayf_" + secrets.token_hex(4)
+    prefix = API_KEY_PREFIX + secrets.token_hex(4)
     secret = secrets.token_urlsafe(32)
     full_key = f"{prefix}.{secret}"
     return full_key, prefix, hash_token(secret)

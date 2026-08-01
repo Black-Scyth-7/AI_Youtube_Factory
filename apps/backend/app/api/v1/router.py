@@ -16,6 +16,7 @@ from app.api.v1.routes import (
     llm,
     meta,
     organizations,
+    plugins,
     sessions,
     users,
 )
@@ -34,3 +35,4 @@ api_v1_router.include_router(feature_flags.router)
 api_v1_router.include_router(llm.router)
 api_v1_router.include_router(agents.router)
 api_v1_router.include_router(billing.router)
+api_v1_router.include_router(plugins.router)

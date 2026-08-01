@@ -209,6 +209,13 @@ class Settings(BaseSettings):
     payment_webhook_secret: str = Field(default="")
     payment_currency: str = Field(default="USD", min_length=3, max_length=3)
 
+    # -- Plugins ----------------------------------------------------------
+    # Plugins get the capabilities they declare, except the privileged ones
+    # (network, LLM). A plugin cannot reach the network or spend money on
+    # inference just by asking to; an operator names it here first.
+    plugins_enabled: bool = Field(default=True)
+    plugin_privileged_allowlist: str = Field(default="")
+
     # -- Observability ----------------------------------------------------
     # /metrics serves internal counters, which describe traffic shape and
     # failure rates. Reachable from the public internet it is reconnaissance,

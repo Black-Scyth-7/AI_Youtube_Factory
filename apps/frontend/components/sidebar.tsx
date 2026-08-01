@@ -1,38 +1,12 @@
 "use client";
 
-import {
-  BarChart3,
-  BookOpen,
-  BrainCircuit,
-  FileText,
-  Gauge,
-  LayoutDashboard,
-  MessagesSquare,
-  Settings,
-  Sparkles,
-  Video,
-  Workflow,
-  Wrench,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@ayf/ui";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/videos", label: "Videos", icon: Video },
-  { href: "/dashboard/agents", label: "Agents", icon: Sparkles },
-  { href: "/dashboard/agents/tools", label: "Agent tools", icon: Wrench },
-  { href: "/dashboard/agents/knowledge", label: "Knowledge", icon: BookOpen },
-  { href: "/dashboard/agents/metrics", label: "Agent metrics", icon: Gauge },
-  { href: "/dashboard/workflows", label: "Workflows", icon: Workflow },
-  { href: "/dashboard/llm", label: "LLM", icon: BrainCircuit },
-  { href: "/dashboard/llm/prompts", label: "Prompts", icon: FileText },
-  { href: "/dashboard/llm/playground", label: "Playground", icon: MessagesSquare },
-  { href: "/dashboard/llm/usage", label: "Usage & cost", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-] as const;
+import { NAV_ITEMS } from "@/components/nav-items";
 
 /** Persistent left navigation for the authenticated dashboard shell. */
 export function Sidebar() {

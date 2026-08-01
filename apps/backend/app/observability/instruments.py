@@ -155,6 +155,19 @@ payment_webhooks_total = counter(
     ("provider", "event_type"),
 )
 
+# -- Plugins ------------------------------------------------------------------
+plugin_invocations_total = counter(
+    "plugin_invocations_total",
+    "Plugin hook invocations, by plugin, hook, and outcome.",
+    ("plugin", "hook", "outcome"),
+)
+plugin_duration_seconds = histogram(
+    "plugin_duration_seconds",
+    "Plugin hook duration in seconds, by plugin and hook.",
+    ("plugin", "hook"),
+    (0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0),
+)
+
 # -- Application --------------------------------------------------------------
 app_info = gauge(
     "app_info",

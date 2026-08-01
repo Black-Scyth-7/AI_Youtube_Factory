@@ -172,7 +172,10 @@ async def test_api_key_lifecycle(session: AsyncSession) -> None:
         email="k@example.com", username="keyuser", password=_PASSWORD, display_name=None
     )
     service = ApiKeyService(session)
-    created = await service.create(user_id=user.id, name="ci", scopes=["video.create"])
+    # "video.create" is an RBAC permission, not an API scope. Scopes used to be
+    # free text because nothing consumed them; they are now a validated
+    # vocabulary. The lifecycle under test is unchanged.
+    created = await service.create(user_id=user.id, name="ci", scopes=["video:read"])
     assert created.raw_key.startswith(created.api_key.prefix + ".")
 
     authed = await service.authenticate(created.raw_key)

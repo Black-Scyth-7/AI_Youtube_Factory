@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import hmac
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.exceptions.base import NotFoundError, UnauthorizedError
+from app.exceptions.base import NotFoundError, UnauthorizedError, ValidationError
 from app.models.api_key import ApiKey
 from app.models.enums import AuditAction
 from app.repositories.api_key import ApiKeyRepository
+from app.security.api_scopes import validate_scopes
 from app.security.tokens import generate_api_key, hash_token
 from app.services.audit import AuditService
 
@@ -41,7 +43,18 @@ class ApiKeyService:
         expires_in_days: int | None = None,
         organization_id: uuid.UUID | None = None,
     ) -> CreatedApiKey:
-        """Create an API key and return the raw value (shown once)."""
+        """Create an API key and return the raw value (shown once).
+
+        Raises:
+            ValidationError: If any requested scope is unknown. Dropping it
+                silently would issue a key that looks like it has access it
+                does not, surfacing much later as a confusing 403.
+        """
+        try:
+            scopes = validate_scopes(scopes)
+        except ValueError as exc:
+            raise ValidationError(str(exc)) from exc
+
         raw_key, prefix, secret_hash = generate_api_key()
         expires_at = (
             datetime.now(UTC) + timedelta(days=expires_in_days)
@@ -87,7 +100,9 @@ class ApiKeyService:
             raise UnauthorizedError("Invalid API key.")
         if key.expires_at is not None and _expired(key.expires_at):
             raise UnauthorizedError("API key has expired.")
-        if hash_token(secret) != key.secret_hash:
+        # Constant-time: an early-exit comparison leaks the stored digest one
+        # character at a time to anyone who can measure the response.
+        if not hmac.compare_digest(hash_token(secret), key.secret_hash):
             raise UnauthorizedError("Invalid API key.")
         key.last_used_at = datetime.now(UTC)
         await self.session.flush()

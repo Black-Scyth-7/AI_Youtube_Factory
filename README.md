@@ -4,7 +4,7 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 09 — Observability (on Phases 01–08).
+> **Status:** Phase 10 — feature complete (Phases 01–10 delivered).
 > The product path runs end to end: research → script → voiceover → render →
 > publish → analytics → learning, driven by a workflow engine with conditions,
 > loops, and parallel branches, on top of an autonomous agent framework and a
@@ -15,10 +15,11 @@ AI. Built as a scalable, multi-tenant monorepo.
 > whole system runs offline and CI needs no API key, no TTS account, and no
 > YouTube credentials.
 >
-> Phase 09 adds metrics at `/metrics`, W3C-compatible tracing with optional
+> Phase 09 added metrics at `/metrics`, W3C-compatible tracing with optional
 > OpenTelemetry export, and a Prometheus + Grafana stack behind a compose
-> profile. Remaining: Phase 10 — billing UI, plugin ecosystem, public API, and
-> mobile.
+> profile. Phase 10 completes the platform: billing with a payment-provider
+> abstraction, a scoped public API at `/api/public/v1`, a capability-based
+> plugin system, and an installable PWA. All ten phases are delivered.
 
 ---
 
@@ -139,6 +140,9 @@ make docker-down  # stop stack
 - [VideoPipeline.md](docs/VideoPipeline.md) — research → script → render → publish → analytics
 - [Observability.md](docs/Observability.md) — metrics, tracing, Prometheus, Grafana, alerting
 - [Billing.md](docs/Billing.md) — plans, subscriptions, quotas, invoices, payments
+- [PublicAPI.md](docs/PublicAPI.md) — the API-key-authenticated public API
+- [Plugins.md](docs/Plugins.md) — plugin manifests, capabilities, hooks
+- [Mobile.md](docs/Mobile.md) — the installable PWA, offline shell, mobile nav
 - [API.md](docs/API.md) — AI API reference (agents + LLM)
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits

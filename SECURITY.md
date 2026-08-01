@@ -39,6 +39,44 @@ code, and — under *Known gaps* — what is not.
   dependency at the route level rather than by convention inside handlers.
 - Organization, team, and project scoping on domain queries.
 
+### The public API
+
+`/api/public/v1` is authenticated by API key, not by session.
+
+- Keys are stored as a **SHA-256 hash** and compared in constant time. A
+  database read yields no usable credential.
+- **Scopes narrow, never widen.** A key holds a subset of what its owner can do,
+  and a write scope does not imply the matching read scope. An unknown scope is
+  refused when the key is created rather than dropped, and a scope later removed
+  from the catalogue stops being honoured instead of acting as a wildcard.
+- Revocation and expiry are checked on every request — a key is long-lived, so
+  there is no refresh cycle during which a revocation would be noticed.
+- **Tenancy is verified per object**, not inferred from an unguessable id. An
+  object belonging to another organization returns **404, not 403**: confirming
+  that an id exists is itself a disclosure. A `project_id` supplied in a query
+  narrows the result set and can never widen it, and a key bound to no
+  organization is refused rather than defaulting to all of them.
+- Requests are rate-limited per key (hashed, so a forged key cannot consume
+  another's budget) rather than per IP.
+
+### Plugins
+
+Plugins are third-party code running in the server process, so the host
+constrains them rather than trusting them:
+
+- **Capabilities are declared and granted.** Network access and LLM calls are
+  privileged and refused unless an operator names the plugin in
+  `PLUGIN_PRIVILEGED_ALLOWLIST`. A plugin that never declares `network` has no
+  way to reach it, so a formatter cannot exfiltrate anything even if hostile.
+- Handlers receive a **copy of a plain dict**, never an ORM entity — a live
+  entity would let a plugin write to the database through a relationship,
+  entirely outside the capability model.
+- Every invocation has an exception boundary and a timeout, so a plugin cannot
+  crash or hang the host.
+- **Installation is not exposed over the API.** Loading a plugin means loading
+  code into the server process; an endpoint for it would turn any account
+  takeover into remote code execution.
+
 ### Configuration
 
 - **No secrets in the repo.** `.env` is git-ignored; only `.env.example` is
@@ -69,7 +107,12 @@ code, and — under *Known gaps* — what is not.
   unbounded `9**9**9**9` in a user-supplied condition is rejected rather than
   hanging a worker.
 - **Rate limiting** (fixed-window, Redis-backed) on top of the per-account
-  login lockout.
+  login lockout. If Redis is unavailable the limiter degrades open for 30
+  seconds and then retries; it previously set a flag that was never cleared, so
+  a single transient error disabled rate limiting for the life of the process.
+- **The service worker never caches API responses.** Cache Storage is shared
+  across every account that uses a browser, so caching authenticated responses
+  would serve one user's data to the next person who signs in.
 - **Structured error envelope** never returns stack traces to clients; details
   are logged server-side and correlated by `request_id`.
 - **Audit logging** of security-relevant actions.
