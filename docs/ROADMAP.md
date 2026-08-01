@@ -3,18 +3,18 @@
 Phased delivery. Each phase meets a Definition of Done (backend + frontend +
 DB + tests + docs + Docker + CI) before the next begins.
 
-| Phase  | Focus                                                                                                                                            | Status     |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                                              | ✅ Done    |
-| **02** | **Authentication & identity** — users, orgs, teams, RBAC, JWT, sessions, OAuth, API keys, invitations, audit, email                              | ✅ Done    |
-| **03** | **Database & core infrastructure** — domain models, enhanced repositories, cache, events, tasks, storage, workflow, feature flags, API framework | ✅ Done    |
-| **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting | ✅ Done    |
-| **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Current |
-| 06     | Storage providers — S3 / MinIO / R2 / GCS / Azure (behind the existing interface)                                                                | Planned    |
-| 07     | Workflow engine (visual) — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                     | Planned    |
-| 08     | Video pipeline — research → publish → analytics → learning                                                                                       | Planned    |
-| 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                      | Planned    |
-| 10     | Billing, plugin ecosystem, public API, mobile                                                                                                    | Planned    |
+| Phase  | Focus                                                                                                                                                                                                      | Status         |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **01** | **Project foundation** — monorepo, tooling, Docker, CI, shared packages, backend skeleton, web apps                                                                                                        | ✅ Done        |
+| **02** | **Authentication & identity** — users, orgs, teams, RBAC, JWT, sessions, OAuth, API keys, invitations, audit, email                                                                                        | ✅ Done        |
+| **03** | **Database & core infrastructure** — domain models, enhanced repositories, cache, events, tasks, storage, workflow, feature flags, API framework                                                           | ✅ Done        |
+| **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting   | ✅ Done        |
+| **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Current     |
+| **06** | **Storage providers** — S3 / MinIO / R2 / GCS / Azure behind the existing interface                                                                                                                        | 🚧 In progress |
+| 07     | Workflow engine (visual) — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                               | Planned        |
+| 08     | Video pipeline — research → publish → analytics → learning                                                                                                                                                 | Planned        |
+| 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned        |
+| 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned        |
 
 ## Phase 04 — delivered
 
@@ -63,10 +63,30 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
 [Knowledge.md](./Knowledge.md), [Workflow.md](./Workflow.md), and
 [API.md](./API.md).
 
-## Phase 06 — next up
+## Phase 06 — in progress
 
-- Storage providers — S3 / MinIO / R2 / GCS / Azure behind the Phase 03
-  storage interface.
-- Remaining Phase 03 breadth: the additional catalog models (subscription/plan/
-  invoice/payment, notification/webhook, cost/usage records, render/queue jobs)
-  and their services, built on the same repository/service/event scaffolding.
+**Delivered — storage providers**
+
+- `S3StorageProvider` serving AWS S3, MinIO and Cloudflare R2 through one
+  implementation (they share the API and differ only in endpoint and addressing
+  style), `GCSStorageProvider` and `AzureStorageProvider` — all behind the
+  existing `StorageClient` Protocol.
+- Cloud SDKs are optional extras (`.[s3]`, `.[gcs]`, `.[azure]`, `.[storage]`);
+  the default local backend needs none. Providers register at import but load
+  their SDK only when an operation runs, so a missing extra surfaces on first
+  use with the install command, not as an import failure.
+- Fixed a latent mismatch: `storage_backend` accepted `gcs` and `azure` while
+  `StorageProvider` had no such members, so either value passed configuration
+  validation and then raised `ValueError` when the client was built. A test now
+  asserts the enum and the settings literal stay in step.
+- MinIO in `docker-compose.yml` for local development, storage settings in
+  `.env.example`, and [Storage.md](./Storage.md).
+- Unit tests (offline, always run) plus S3 integration tests verified against a
+  real MinIO instance — byte-exact round trips, overwrite, `NotFoundError`,
+  delete-absent as a no-op, and a presigned URL fetched over HTTP.
+
+**Remaining**
+
+- The additional catalog models (subscription/plan/invoice/payment,
+  notification/webhook, cost/usage records, render/queue jobs) and their
+  services, built on the same repository/service/event scaffolding.

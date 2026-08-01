@@ -5,14 +5,14 @@
 An `AgentTool` couples a JSON-schema declaration with an async implementation and
 the full lifecycle the spec requires:
 
-| Method | Purpose |
-| --- | --- |
-| `schema()` | Name + description + input schema (for discovery/LLM). |
-| `describe()` | One-line human description. |
-| `validate(args)` | Check required arguments; raise on error. |
-| `execute(args)` | Run the tool, return text. |
-| `rollback(args, result)` | Undo a mutating execution (no-op for pure tools). |
-| `health()` | Whether the tool is ready. |
+| Method                   | Purpose                                                |
+| ------------------------ | ------------------------------------------------------ |
+| `schema()`               | Name + description + input schema (for discovery/LLM). |
+| `describe()`             | One-line human description.                            |
+| `validate(args)`         | Check required arguments; raise on error.              |
+| `execute(args)`          | Run the tool, return text.                             |
+| `rollback(args, result)` | Undo a mutating execution (no-op for pure tools).      |
+| `health()`               | Whether the tool is ready.                             |
 
 `AgentToolRegistry.run(name, args)` validates, executes, and captures a
 `ToolOutcome` (output, success, error, duration). Tools bridge to the Phase 04
@@ -38,15 +38,15 @@ executor and count against the task's retries.
 `AgentPolicy` bounds a run; `PolicyEnforcer` enforces it and tracks cumulative
 usage:
 
-| Limit | Meaning |
-| --- | --- |
-| `allowed_tools` / `forbidden_tools` | Tool allow / deny lists. |
-| `max_cost_usd` | Spend ceiling (raises `PolicyViolationError`). |
-| `max_tokens` | Token ceiling. |
-| `max_steps` | Max executed tasks. |
-| `max_retries` | Clamps per-task retries. |
-| `task_timeout_seconds` | Per-task hard timeout. |
-| `require_approval_for_mutations` | Mutating tools need `grant_approval()` first. |
+| Limit                               | Meaning                                        |
+| ----------------------------------- | ---------------------------------------------- |
+| `allowed_tools` / `forbidden_tools` | Tool allow / deny lists.                       |
+| `max_cost_usd`                      | Spend ceiling (raises `PolicyViolationError`). |
+| `max_tokens`                        | Token ceiling.                                 |
+| `max_steps`                         | Max executed tasks.                            |
+| `max_retries`                       | Clamps per-task retries.                       |
+| `task_timeout_seconds`              | Per-task hard timeout.                         |
+| `require_approval_for_mutations`    | Mutating tools need `grant_approval()` first.  |
 
 Mutating tools raise `ApprovalRequiredError` until approved — the seam for a
 human-in-the-loop gate. The `sandbox/` module adds an independent per-action

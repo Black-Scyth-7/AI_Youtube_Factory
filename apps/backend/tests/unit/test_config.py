@@ -32,6 +32,24 @@ def test_unregistered_llm_provider_raises() -> None:
         create_llm_client(LLMProvider.ANTHROPIC)
 
 
-def test_unregistered_storage_provider_raises() -> None:
+def test_unregistered_storage_provider_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The factory must reject a provider with no registered implementation.
+
+    This used to assert that against S3, which is now implemented. The behaviour
+    still matters for any provider added to the enum before its factory, so it is
+    exercised by unregistering one for the duration of the test.
+    """
+    from app.core.storage import factory
+
+    registry = dict(factory._REGISTRY)
+    monkeypatch.setattr(factory, "_REGISTRY", registry)
+    registry.pop(StorageProvider.S3)
+
     with pytest.raises(ServiceUnavailableError):
         create_storage_client(StorageProvider.S3)
+
+
+def test_every_storage_provider_is_registered() -> None:
+    """Counterpart to the above: nothing in the enum may be left unimplemented."""
+    for provider in StorageProvider:
+        assert create_storage_client(provider) is not None

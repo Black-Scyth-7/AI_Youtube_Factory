@@ -1,7 +1,8 @@
 """Storage provider abstraction — interfaces.
 
-Provider-agnostic object storage contract. Future backends: AWS S3, MinIO,
-Cloudflare R2, and local filesystem. No implementation ships in Phase 01.
+Provider-agnostic object storage contract. Backends: local filesystem, any
+S3-compatible service (AWS S3, MinIO, Cloudflare R2), Google Cloud Storage and
+Azure Blob Storage.
 """
 
 from __future__ import annotations
@@ -12,12 +13,23 @@ from typing import Protocol, runtime_checkable
 
 
 class StorageProvider(StrEnum):
-    """Known storage backend identifiers."""
+    """Known storage backend identifiers.
+
+    Must stay in step with ``Settings.storage_backend``: a value accepted there
+    but missing here passes configuration validation and then fails at the point
+    the client is constructed.
+    """
 
     S3 = "s3"
     MINIO = "minio"
     R2 = "r2"
+    GCS = "gcs"
+    AZURE = "azure"
     LOCAL = "local"
+
+
+#: Providers that speak the S3 API and share one implementation.
+S3_COMPATIBLE = frozenset({StorageProvider.S3, StorageProvider.MINIO, StorageProvider.R2})
 
 
 @dataclass(slots=True, frozen=True)

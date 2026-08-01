@@ -15,16 +15,16 @@ This document covers the agent workflow runtime.
 An ordered set of `WorkflowStep`s executed with a shared, threaded context dict.
 Each step supports the full set of control-flow primitives:
 
-| Primitive | How |
-| --- | --- |
-| **Sequential** | Default — steps run in order. |
-| **Parallel** | Steps sharing a `parallel_group` run via `asyncio.gather`. |
-| **Conditional** | `condition(ctx)` returning `False` skips the step. |
-| **Loop** | `loop_until(ctx)` repeats the action up to `max_loops`. |
-| **Retry** | `retries` re-attempts on failure. |
-| **Delay** | `delay_seconds` waits before running. |
-| **Approval** | `requires_approval` raises `ApprovalPendingError` until granted. |
-| **Merge** | Downstream steps read prior results from the shared context. |
+| Primitive       | How                                                              |
+| --------------- | ---------------------------------------------------------------- |
+| **Sequential**  | Default — steps run in order.                                    |
+| **Parallel**    | Steps sharing a `parallel_group` run via `asyncio.gather`.       |
+| **Conditional** | `condition(ctx)` returning `False` skips the step.               |
+| **Loop**        | `loop_until(ctx)` repeats the action up to `max_loops`.          |
+| **Retry**       | `retries` re-attempts on failure.                                |
+| **Delay**       | `delay_seconds` waits before running.                            |
+| **Approval**    | `requires_approval` raises `ApprovalPendingError` until granted. |
+| **Merge**       | Downstream steps read prior results from the shared context.     |
 
 `run(context, approvals)` returns a `WorkflowResult` (`completed`, per-step
 statuses, final context). Execution stops early on a failed step.

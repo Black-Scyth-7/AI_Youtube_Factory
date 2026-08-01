@@ -34,7 +34,7 @@ without changing callers:
   the LLM itself (via `LLMService`) can compress history; any object matching the
   shape works.
 - **`LongTermMemory`** — `async store(...)` / `async recall(conversation_id,
-  query, k=5)`. The seam for a durable, retrievable memory (e.g. a vector store).
+query, k=5)`. The seam for a durable, retrievable memory (e.g. a vector store).
   The concrete backend arrives with the agent framework in a later phase; the
   interface is defined here so the working-context code is already written
   against it.
@@ -59,6 +59,6 @@ working memory that complements the conversation memory above:
 - **Persistence** — `MemoryService.snapshot()` writes a run's scoped memory to the
   `agent_memory` table; the memory explorer reads it back.
 
-Knowledge (facts/policies an agent consults) is deliberately *separate* from
+Knowledge (facts/policies an agent consults) is deliberately _separate_ from
 memory — see [Knowledge.md](./Knowledge.md). Durable/vector memory plugs in behind
 the `MemoryStore` / `LongTermMemory` protocols in a later phase.

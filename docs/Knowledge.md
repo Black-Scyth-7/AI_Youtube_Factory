@@ -11,7 +11,7 @@ distinction.
   (`policy` / `documentation` / `template` / `fact` / `preference` / `rule`), and
   tags.
 - **`KnowledgeBase`** — an in-memory, keyword-searchable store. `search(query,
-  limit)` returns the most relevant entry contents; `policies()` returns policy
+limit)` returns the most relevant entry contents; `policies()` returns policy
   and rule entries (the reasoner injects these into the system prompt).
 - **`KnowledgeContext`** — renders selected facts + policies into a prompt-ready
   block.

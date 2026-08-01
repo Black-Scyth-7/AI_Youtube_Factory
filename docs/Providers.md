@@ -1,19 +1,19 @@
 # LLM Providers
 
 Every LLM call resolves to a **provider** — the only layer that touches a vendor
-SDK. This is what makes the golden rule enforceable: *no AI feature calls
-Anthropic directly.*
+SDK. This is what makes the golden rule enforceable: _no AI feature calls
+Anthropic directly._
 
 ## Contract: `BaseLLMProvider`
 
 `app/core/llm/base.py` defines the ABC every provider implements:
 
-| Method | Purpose |
-| --- | --- |
-| `async chat(request) -> ChatResponse` | One non-streaming completion. |
-| `async stream(request) -> AsyncIterator[StreamEvent]` | Uniform streaming events. |
-| `async count_tokens(request) -> int` | Token count for a request. |
-| `async health_check() -> bool` | Liveness/credential probe. |
+| Method                                                | Purpose                       |
+| ----------------------------------------------------- | ----------------------------- |
+| `async chat(request) -> ChatResponse`                 | One non-streaming completion. |
+| `async stream(request) -> AsyncIterator[StreamEvent]` | Uniform streaming events.     |
+| `async count_tokens(request) -> int`                  | Token count for a request.    |
+| `async health_check() -> bool`                        | Liveness/credential probe.    |
 
 Concrete helpers (`complete`, `embed`, `estimate_cost`, `supports_*`) are
 provided on the base. Each provider exposes a `slug` used for registration and

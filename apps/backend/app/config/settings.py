@@ -165,6 +165,30 @@ class Settings(BaseSettings):
     storage_local_path: str = Field(default="./var/storage")
     storage_public_base_url: str = Field(default="http://localhost:8000/files")
 
+    # S3-compatible (AWS S3, MinIO, Cloudflare R2)
+    storage_bucket: str = Field(default="ai-youtube-factory")
+    storage_region: str = Field(default="us-east-1")
+    storage_endpoint_url: str | None = Field(
+        default=None,
+        description="Override for non-AWS S3 services (MinIO, R2). None uses AWS.",
+    )
+    storage_access_key: str = Field(default="", repr=False)
+    storage_secret_key: str = Field(default="", repr=False)
+    storage_use_ssl: bool = Field(default=True)
+    storage_force_path_style: bool = Field(
+        default=False,
+        description="MinIO needs path-style addressing; AWS and R2 use virtual-host.",
+    )
+
+    # Google Cloud Storage
+    storage_gcs_project: str | None = Field(default=None)
+    storage_gcs_credentials_path: str | None = Field(default=None, repr=False)
+
+    # Azure Blob Storage
+    storage_azure_account_url: str | None = Field(default=None)
+    storage_azure_container: str = Field(default="ai-youtube-factory")
+    storage_azure_connection_string: str | None = Field(default=None, repr=False)
+
     # -- Web / links ------------------------------------------------------
     frontend_url: str = Field(default="http://localhost:3000")
     cookie_secure: bool = Field(default=False)

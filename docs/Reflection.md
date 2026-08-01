@@ -22,14 +22,14 @@ are persisted to `agent_reflection` and read via `GET /reflections/{run_id}`.
 `Evaluator.evaluate(graph, context)` scores the run across six dimensions, each in
 `[0, 1]`, from concrete outcomes (so scores are deterministic and testable):
 
-| Dimension | Derived from |
-| --- | --- |
-| correctness | `1 − failed/total` tasks |
-| completeness | `succeeded/total` tasks |
-| cost | spend vs the policy budget |
-| latency | wall-clock time (fast ⇒ high) |
-| quality | mean of correctness + completeness |
-| confidence | completeness weighted by correctness |
+| Dimension    | Derived from                         |
+| ------------ | ------------------------------------ |
+| correctness  | `1 − failed/total` tasks             |
+| completeness | `succeeded/total` tasks              |
+| cost         | spend vs the policy budget           |
+| latency      | wall-clock time (fast ⇒ high)        |
+| quality      | mean of correctness + completeness   |
+| confidence   | completeness weighted by correctness |
 
 `Evaluation.overall` is a weighted blend (correctness 0.30, completeness 0.25,
 quality 0.15, cost/latency/confidence 0.10 each). Evaluations persist to

@@ -56,19 +56,19 @@ Service layer (LLMService / PromptService / ConversationService)
 All behavior is driven by settings (env vars, prefix-less uppercase) — see
 `.env.example` and `app/config/settings.py`:
 
-| Setting | Default | Purpose |
-| --- | --- | --- |
-| `LLM_DEFAULT_PROVIDER` | `anthropic` | Provider slug; `mock` for offline. |
-| `LLM_DEFAULT_MODEL` | `claude-opus-4-8` | Resolved from config, never hardcoded. |
-| `LLM_MAX_TOKENS` | `4096` | Default output cap. |
-| `LLM_THINKING` | `adaptive` | Adaptive thinking (`off` to disable). |
-| `LLM_TIMEOUT_SECONDS` | `120` | Per-request timeout. |
-| `LLM_MAX_RETRIES` | `3` | Retry attempts (exponential backoff). |
-| `LLM_CACHE_ENABLED` | `true` | Response + token-count caching. |
-| `LLM_CACHE_TTL_SECONDS` | `3600` | Cache TTL. |
-| `LLM_RATE_LIMIT_RPM` | `60` | Requests/min per rate-limit key. |
-| `LLM_RATE_LIMIT_CONCURRENT` | `10` | Max concurrent in-flight requests. |
-| `LLM_FALLBACK_MODEL` | — | Optional fallback model on failure. |
+| Setting                     | Default           | Purpose                                |
+| --------------------------- | ----------------- | -------------------------------------- |
+| `LLM_DEFAULT_PROVIDER`      | `anthropic`       | Provider slug; `mock` for offline.     |
+| `LLM_DEFAULT_MODEL`         | `claude-opus-4-8` | Resolved from config, never hardcoded. |
+| `LLM_MAX_TOKENS`            | `4096`            | Default output cap.                    |
+| `LLM_THINKING`              | `adaptive`        | Adaptive thinking (`off` to disable).  |
+| `LLM_TIMEOUT_SECONDS`       | `120`             | Per-request timeout.                   |
+| `LLM_MAX_RETRIES`           | `3`               | Retry attempts (exponential backoff).  |
+| `LLM_CACHE_ENABLED`         | `true`            | Response + token-count caching.        |
+| `LLM_CACHE_TTL_SECONDS`     | `3600`            | Cache TTL.                             |
+| `LLM_RATE_LIMIT_RPM`        | `60`              | Requests/min per rate-limit key.       |
+| `LLM_RATE_LIMIT_CONCURRENT` | `10`              | Max concurrent in-flight requests.     |
+| `LLM_FALLBACK_MODEL`        | —                 | Optional fallback model on failure.    |
 
 ### A note on sampling parameters
 
@@ -88,21 +88,21 @@ USD cost from token counts; the API surfaces this per request and in rollups.
 
 ## API endpoints (`/api/v1/llm`)
 
-| Method & path | Purpose |
-| --- | --- |
-| `POST /chat` | Single accounted completion (cached, retried). |
-| `POST /stream` | Server-Sent Events stream of the completion. |
-| `GET  /models` | Model catalog. |
-| `GET  /health` | Per-provider health checks. |
-| `GET  /tools` | Registered tool schemas. |
-| `POST /prompts` | Create a versioned prompt template. |
-| `POST /prompts/{id}/versions` | Add an immutable version. |
-| `POST /prompts/{id}/render` | Render with a variable context. |
-| `POST /prompts/{id}/rollback` | Roll back to a prior version (as a new one). |
-| `POST /conversations` | Create a persisted conversation. |
-| `GET  /conversations/{id}/messages` | Load the transcript. |
-| `GET  /usage` | Token-usage rollup for an org + date range. |
-| `GET  /costs` | Cost rollup for an org + date range. |
+| Method & path                       | Purpose                                        |
+| ----------------------------------- | ---------------------------------------------- |
+| `POST /chat`                        | Single accounted completion (cached, retried). |
+| `POST /stream`                      | Server-Sent Events stream of the completion.   |
+| `GET  /models`                      | Model catalog.                                 |
+| `GET  /health`                      | Per-provider health checks.                    |
+| `GET  /tools`                       | Registered tool schemas.                       |
+| `POST /prompts`                     | Create a versioned prompt template.            |
+| `POST /prompts/{id}/versions`       | Add an immutable version.                      |
+| `POST /prompts/{id}/render`         | Render with a variable context.                |
+| `POST /prompts/{id}/rollback`       | Roll back to a prior version (as a new one).   |
+| `POST /conversations`               | Create a persisted conversation.               |
+| `GET  /conversations/{id}/messages` | Load the transcript.                           |
+| `GET  /usage`                       | Token-usage rollup for an org + date range.    |
+| `GET  /costs`                       | Cost rollup for an org + date range.           |
 
 Org-scoped operations enforce RBAC (`prompt.edit`, `agent.run`,
 `analytics.read`).

@@ -57,27 +57,27 @@ agents in `app/agents/examples/` (`echo`, `assistant`, `research`).
 
 ## Subsystems
 
-| Package | Responsibility | Doc |
-| --- | --- | --- |
-| `base/` | identity, goals, tasks, lifecycle, context, config, LLM bridge, `BaseAgent` | — |
-| `manager/` | `AgentManager` — create/run/pause/resume/cancel, health, tracking | — |
-| `registry/` | `AgentRegistry` — versioning, discovery, capabilities, tags | — |
-| `planner/` | goal decomposition, dependency graph, replanning | [Planning.md](./Planning.md) |
-| `reasoning/` | structured reasoning pipeline | [Planning.md](./Planning.md) |
-| `executor/` | run tasks: LLM/tool calls, retries, timeouts, metrics | [Planning.md](./Planning.md) |
-| `reflection/` | post-run analysis + lessons | [Reflection.md](./Reflection.md) |
-| `evaluation/` | scored quality dimensions | [Reflection.md](./Reflection.md) |
-| `memory/` | scoped working memory + Phase 04 window/summary | [Memory.md](./Memory.md) |
-| `knowledge/` | policies/docs/facts/preferences, searchable | [Knowledge.md](./Knowledge.md) |
-| `tools/` | `AgentTool` interface + built-in tools | [Tools.md](./Tools.md) |
-| `policies/` | allowed/forbidden tools, cost/token/step limits, approval | [Tools.md](./Tools.md) |
-| `scheduler/` | immediate/delayed/recurring/cron scheduling | — |
-| `workflows/` | sequential/parallel/conditional/loop/retry/approval steps | [Workflow.md](./Workflow.md) |
-| `coordination/` | multi-agent supervisor/worker/observer + delegation | [AgentFramework.md](./AgentFramework.md#multi-agent) |
-| `communication/` | inter-agent message bus + mailboxes | — |
-| `monitoring/` | aggregate run metrics + snapshot | — |
-| `sandbox/` | per-action timeout + concurrency limits | — |
-| `events/` | agent domain events on the Phase 03 event bus | — |
+| Package          | Responsibility                                                              | Doc                                                  |
+| ---------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `base/`          | identity, goals, tasks, lifecycle, context, config, LLM bridge, `BaseAgent` | —                                                    |
+| `manager/`       | `AgentManager` — create/run/pause/resume/cancel, health, tracking           | —                                                    |
+| `registry/`      | `AgentRegistry` — versioning, discovery, capabilities, tags                 | —                                                    |
+| `planner/`       | goal decomposition, dependency graph, replanning                            | [Planning.md](./Planning.md)                         |
+| `reasoning/`     | structured reasoning pipeline                                               | [Planning.md](./Planning.md)                         |
+| `executor/`      | run tasks: LLM/tool calls, retries, timeouts, metrics                       | [Planning.md](./Planning.md)                         |
+| `reflection/`    | post-run analysis + lessons                                                 | [Reflection.md](./Reflection.md)                     |
+| `evaluation/`    | scored quality dimensions                                                   | [Reflection.md](./Reflection.md)                     |
+| `memory/`        | scoped working memory + Phase 04 window/summary                             | [Memory.md](./Memory.md)                             |
+| `knowledge/`     | policies/docs/facts/preferences, searchable                                 | [Knowledge.md](./Knowledge.md)                       |
+| `tools/`         | `AgentTool` interface + built-in tools                                      | [Tools.md](./Tools.md)                               |
+| `policies/`      | allowed/forbidden tools, cost/token/step limits, approval                   | [Tools.md](./Tools.md)                               |
+| `scheduler/`     | immediate/delayed/recurring/cron scheduling                                 | —                                                    |
+| `workflows/`     | sequential/parallel/conditional/loop/retry/approval steps                   | [Workflow.md](./Workflow.md)                         |
+| `coordination/`  | multi-agent supervisor/worker/observer + delegation                         | [AgentFramework.md](./AgentFramework.md#multi-agent) |
+| `communication/` | inter-agent message bus + mailboxes                                         | —                                                    |
+| `monitoring/`    | aggregate run metrics + snapshot                                            | —                                                    |
+| `sandbox/`       | per-action timeout + concurrency limits                                     | —                                                    |
+| `events/`        | agent domain events on the Phase 03 event bus                               | —                                                    |
 
 ## Multi-agent
 
