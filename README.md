@@ -4,17 +4,21 @@ Production-grade SaaS platform that autonomously **researches, generates, edits,
 optimizes, publishes, analyzes, and continuously improves** YouTube content using
 AI. Built as a scalable, multi-tenant monorepo.
 
-> **Status:** Phase 05 — AI Agent Framework (on Phases 01–04).
-> Adds a generic, provider-independent autonomous agent platform: `BaseAgent`
-> (plan → reason → execute → reflect → learn → evaluate) with a manager,
-> registry, planning/reasoning/execution engines, reflection and six-dimension
-> evaluation, scoped memory, a searchable knowledge base, a validated tool
-> framework, execution policies and a sandbox, a scheduler, an in-process
-> workflow engine, multi-agent coordination, monitoring, and agent events —
-> exposed via `/api/v1` (`/agents`, `/goals`, `/tasks`, `/tools`, …) and
-> dashboard pages. **Agents reach models only through the Phase 04 LLM
-> framework**, so the whole engine runs offline against the mock provider. The
-> video pipeline and domain agents build on this in later phases.
+> **Status:** Phase 09 — Observability (on Phases 01–08).
+> The product path runs end to end: research → script → voiceover → render →
+> publish → analytics → learning, driven by a workflow engine with conditions,
+> loops, and parallel branches, on top of an autonomous agent framework and a
+> provider-independent Claude LLM framework.
+>
+> Every external capability — LLM, speech, rendering, publishing, analytics, and
+> object storage — sits behind an interface with a deterministic mock, so the
+> whole system runs offline and CI needs no API key, no TTS account, and no
+> YouTube credentials.
+>
+> Phase 09 adds metrics at `/metrics`, W3C-compatible tracing with optional
+> OpenTelemetry export, and a Prometheus + Grafana stack behind a compose
+> profile. Remaining: Phase 10 — billing UI, plugin ecosystem, public API, and
+> mobile.
 
 ---
 
@@ -28,7 +32,10 @@ AI. Built as a scalable, multi-tenant monorepo.
 | **admin**    | Next.js (App Router) · shared design system            | 3001 |
 | PostgreSQL   | 17                                                     | 5432 |
 | Redis        | 7                                                      | 6379 |
-| RabbitMQ     | 4 (management UI 15672)                                | 5672 |
+| RabbitMQ     | 3.13 LTS (management UI 15672)                         | 5672 |
+| MinIO        | S3-compatible object storage (console 9001)            | 9000 |
+| Prometheus   | 3.1 — `--profile observability`                        | 9090 |
+| Grafana      | 11.5 — `--profile observability`                       | 3002 |
 
 ## Monorepo layout
 
@@ -50,7 +57,7 @@ ai-youtube-factory/
 ├─ database/       PostgreSQL init + migration docs
 ├─ scripts/        setup / dev / lint / format / test / docker / reset / seed
 ├─ docs/           Architecture, setup, code style, roadmap, security
-├─ infra/          Infrastructure-as-code (later phases)
+├─ infra/          Prometheus scrape config + alert rules, Grafana provisioning
 ├─ tests/          Cross-service / e2e placeholders
 └─ .github/        CI/CD workflows
 ```
