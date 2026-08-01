@@ -7,6 +7,7 @@ from app.config import Environment, Settings
 from app.core.llm import LLMProvider, create_llm_client
 from app.core.storage import StorageProvider, create_storage_client
 from app.exceptions import ServiceUnavailableError
+from pydantic import ValidationError
 
 
 def test_settings_defaults() -> None:
@@ -53,3 +54,51 @@ def test_every_storage_provider_is_registered() -> None:
     """Counterpart to the above: nothing in the enum may be left unimplemented."""
     for provider in StorageProvider:
         assert create_storage_client(provider) is not None
+
+
+# -- Production secret hardening ----------------------------------------------
+def _production_env(monkeypatch: pytest.MonkeyPatch, **overrides: str) -> None:
+    """Point Settings at a production environment with explicit secrets."""
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    for name in ("SECRET_KEY", "JWT_SECRET_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    for key, value in overrides.items():
+        monkeypatch.setenv(key, value)
+
+
+def test_production_refuses_placeholder_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The hole: a deployment that forgot to set them signed tokens with a value
+    published in this repository."""
+    _production_env(monkeypatch)
+    with pytest.raises(ValidationError, match="placeholder"):
+        Settings()
+
+
+def test_production_refuses_short_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
+    _production_env(monkeypatch, SECRET_KEY="abcdefgh", JWT_SECRET_KEY="abcdefgh")
+    with pytest.raises(ValidationError, match="characters"):
+        Settings()
+
+
+def test_production_flags_either_secret(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Setting one properly must not excuse the other."""
+    _production_env(monkeypatch, SECRET_KEY="x" * 48)
+    with pytest.raises(ValidationError, match="JWT_SECRET_KEY"):
+        Settings()
+
+
+def test_production_accepts_strong_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
+    _production_env(monkeypatch, SECRET_KEY="x" * 48, JWT_SECRET_KEY="y" * 48)
+    settings = Settings()
+    assert settings.is_production is True
+
+
+@pytest.mark.parametrize("environment", ["local", "development", "staging", "test"])
+def test_non_production_still_boots_with_defaults(
+    monkeypatch: pytest.MonkeyPatch, environment: str
+) -> None:
+    """Local development must not need a generated secret."""
+    monkeypatch.setenv("ENVIRONMENT", environment)
+    for name in ("SECRET_KEY", "JWT_SECRET_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    assert Settings().is_production is False

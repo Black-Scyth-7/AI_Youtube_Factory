@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 from pydantic import (
     Field,
@@ -20,6 +20,7 @@ from pydantic import (
     TypeAdapter,
     computed_field,
     field_validator,
+    model_validator,
 )
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
@@ -240,6 +241,47 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """True when running in the production environment."""
         return self.environment is Environment.PRODUCTION
+
+    #: Values shipped in the repository as placeholders. Anyone can read them,
+    #: so a deployment still using one can have its tokens forged by anyone.
+    PLACEHOLDER_SECRETS: ClassVar[frozenset[str]] = frozenset(
+        {"change-me-in-production", "change-me-jwt-secret", "changeme", "secret"}
+    )
+    #: HS256 keys shorter than the hash output weaken the signature (RFC 7518 3.2).
+    MIN_SECRET_LENGTH: ClassVar[int] = 32
+
+    @model_validator(mode="after")
+    def _reject_insecure_production_secrets(self) -> Settings:
+        """Refuse to start in production with a placeholder or short secret.
+
+        There is an is_production flag but nothing used it, so a deployment that
+        forgot to set JWT_SECRET_KEY started happily and signed every token with
+        a value published in this repository. Failing to boot is noisy; silently
+        accepting forged tokens is not.
+        """
+        if self.environment is not Environment.PRODUCTION:
+            return self
+
+        problems: list[str] = []
+        for name in ("secret_key", "jwt_secret_key"):
+            value = getattr(self, name)
+            env_name = name.upper()
+            if value in self.PLACEHOLDER_SECRETS:
+                problems.append(f"{env_name} is still the placeholder value")
+            elif len(value) < self.MIN_SECRET_LENGTH:
+                problems.append(
+                    f"{env_name} is {len(value)} characters; "
+                    f"at least {self.MIN_SECRET_LENGTH} are required"
+                )
+
+        if problems:
+            raise ValueError(
+                "Insecure configuration for ENVIRONMENT=production: "
+                + "; ".join(problems)
+                + '. Generate one with: python -c "import secrets; '
+                'print(secrets.token_urlsafe(48))"'
+            )
+        return self
 
     @computed_field  # type: ignore[prop-decorator]
     @property
