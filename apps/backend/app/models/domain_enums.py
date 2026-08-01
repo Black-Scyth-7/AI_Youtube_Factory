@@ -142,3 +142,24 @@ class UsageMetric(StrEnum):
     PUBLISH = "publish"
     AGENT_RUN = "agent_run"
     API_CALL = "api_call"
+
+
+# -- Video pipeline -----------------------------------------------------------
+class PipelineStage(StrEnum):
+    RESEARCH = "research"
+    SCRIPT = "script"
+    VOICEOVER = "voiceover"
+    RENDER = "render"
+    PUBLISH = "publish"
+    ANALYTICS = "analytics"
+    LEARNING = "learning"
+    DONE = "done"
+    FAILED = "failed"
+
+
+class PublicationStatus(StrEnum):
+    DRAFT = "draft"
+    SCHEDULED = "scheduled"
+    PUBLISHING = "publishing"
+    PUBLISHED = "published"
+    FAILED = "failed"

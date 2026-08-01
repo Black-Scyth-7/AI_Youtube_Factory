@@ -189,6 +189,15 @@ class Settings(BaseSettings):
     storage_azure_container: str = Field(default="ai-youtube-factory")
     storage_azure_connection_string: str | None = Field(default=None, repr=False)
 
+    # -- Video pipeline ---------------------------------------------------
+    # Each external capability resolves to a registered provider slug. "mock" is
+    # always available and deterministic, so the pipeline runs without keys.
+    pipeline_speech_provider: str = Field(default="mock")
+    pipeline_render_provider: str = Field(default="mock")
+    pipeline_publish_provider: str = Field(default="mock")
+    pipeline_analytics_provider: str = Field(default="mock")
+    pipeline_default_voice: str = Field(default="default")
+
     # -- Web / links ------------------------------------------------------
     frontend_url: str = Field(default="http://localhost:3000")
     cookie_secure: bool = Field(default=False)

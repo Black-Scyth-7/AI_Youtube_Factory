@@ -12,7 +12,7 @@ DB + tests + docs + Docker + CI) before the next begins.
 | **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Done |
 | **06** | **Storage providers & catalog domain** — S3/MinIO/R2/GCS/Azure, billing, notifications, jobs                                                                                                               | ✅ Done |
 | **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | Planned |
-| 08     | Video pipeline — research → publish → analytics → learning                                                                                                                                                 | Planned |
+| **08** | **Video pipeline** — research → script → render → publish → analytics → learning                                                                                                                           | Planned |
 | 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned |
 | 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned |
 
@@ -126,3 +126,22 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
   implementation.
 - Migration `0006_workflow`, 42 engine tests, and
   [WorkflowEngine.md](./WorkflowEngine.md).
+
+## Phase 08 — delivered
+
+- The product path end to end: research → script → voiceover → render → publish
+  → analytics → learning, with each stage a separate method so a run resumes at
+  the stage that failed rather than repeating an expensive render.
+- Four provider Protocols — speech, render, publish, analytics — each with a
+  deterministic mock, mirroring the LLM framework. The whole pipeline therefore
+  runs offline and CI needs no TTS key, renderer or YouTube account. Mocks write
+  real bytes through the storage layer, so that path is exercised rather than
+  stubbed.
+- One `Publication` per video per platform, enforced by a unique constraint, so
+  re-publishing updates rather than duplicates; a provider failure is recorded on
+  the publication before being re-raised. Analytics upsert on
+  `(publication_id, measured_on)`, so re-fetching a day updates that row while
+  separate days stay separate.
+- `PerformanceLesson` closes the loop with explainable observations an agent can
+  consult when planning the next video.
+- Migration `0007_pipeline`, 26 tests, and [VideoPipeline.md](./VideoPipeline.md).

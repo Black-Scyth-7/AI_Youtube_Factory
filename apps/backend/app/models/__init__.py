@@ -50,7 +50,9 @@ from app.models.domain_enums import (
     NotificationChannel,
     NotificationStatus,
     PaymentStatus,
+    PipelineStage,
     ProjectStatus,
+    PublicationStatus,
     RenderJobKind,
     SubscriptionStatus,
     TriggerKind,
@@ -99,6 +101,13 @@ from app.models.notification import (
     WebhookDelivery,
 )
 from app.models.organization import Organization, OrganizationMember
+from app.models.pipeline import (
+    AnalyticsRecord,
+    PerformanceLesson,
+    PipelineRun,
+    Publication,
+    ResearchNote,
+)
 from app.models.rbac import Permission, Role, role_permissions
 from app.models.team import Team, TeamMember
 from app.models.types import GUID
@@ -131,6 +140,7 @@ __all__ = [
     "AgentToolDefinition",
     "AgentToolExecution",
     "AgentVersion",
+    "AnalyticsRecord",
     "ApiKey",
     "AuditAction",
     "AuditLog",
@@ -173,7 +183,10 @@ __all__ = [
     "PasswordResetToken",
     "Payment",
     "PaymentStatus",
+    "PerformanceLesson",
     "Permission",
+    "PipelineRun",
+    "PipelineStage",
     "Plan",
     "Profile",
     "Project",
@@ -181,10 +194,13 @@ __all__ = [
     "PromptTemplate",
     "PromptVersion",
     "ProviderConfiguration",
+    "Publication",
+    "PublicationStatus",
     "QueueJob",
     "RefreshToken",
     "RenderJob",
     "RenderJobKind",
+    "ResearchNote",
     "Role",
     "Session",
     "SoftDeleteMixin",
