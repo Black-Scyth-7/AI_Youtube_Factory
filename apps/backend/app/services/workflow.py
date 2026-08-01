@@ -9,8 +9,8 @@ design is compatible with a future visual editor (nodes carry `position`).
 
 from __future__ import annotations
 
+import json
 import uuid
-from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
@@ -19,6 +19,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events import WorkflowStarted, get_event_bus
+from app.core.workflow import (
+    GraphEdge,
+    GraphNode,
+    NodeOutcome,
+    WorkflowEngine,
+    WorkflowGraph,
+)
 from app.exceptions.base import NotFoundError, WorkflowError
 from app.models.domain_enums import WorkflowExecutionStatus
 from app.models.workflow import (
@@ -26,6 +33,7 @@ from app.models.workflow import (
     WorkflowEdge,
     WorkflowExecution,
     WorkflowNode,
+    WorkflowNodeExecution,
 )
 from app.repositories.infra import WorkflowExecutionRepository, WorkflowRepository
 
@@ -35,6 +43,37 @@ NodeHandler = Callable[[WorkflowNode, dict[str, Any]], Awaitable[Any]]
 async def _noop_handler(node: WorkflowNode, context: dict[str, Any]) -> Any:
     """Default handler — records that the node ran."""
     return {"node": node.key, "type": node.type}
+
+
+def _adapt_handler(
+    handler: NodeHandler,
+) -> Callable[[GraphNode, dict[str, Any]], Awaitable[Any]]:
+    """Let a handler written against the ORM node accept a GraphNode.
+
+    Registered handlers predate the engine and expect ``.key``/``.type``/
+    ``.config``, all of which GraphNode also provides, so the value passes
+    straight through.
+    """
+
+    async def wrapper(node: GraphNode, context: dict[str, Any]) -> Any:
+        return await handler(node, context)  # type: ignore[arg-type]
+
+    return wrapper
+
+
+def _jsonable(value: Any) -> Any:
+    """Coerce a value into something the JSON columns can store.
+
+    Handler output is arbitrary; anything unserialisable is recorded as its
+    string form rather than failing the run at flush time.
+    """
+    try:
+        json.dumps(value)
+    except (TypeError, ValueError):
+        return {"repr": repr(value)}
+    if isinstance(value, dict):
+        return value
+    return value
 
 
 class WorkflowService:
@@ -118,36 +157,51 @@ class WorkflowService:
         )
         return list(nodes), list(edges)
 
-    @staticmethod
-    def _topological_order(
-        nodes: list[WorkflowNode], edges: list[WorkflowEdge]
-    ) -> list[WorkflowNode]:
-        """Return nodes in dependency order; raise on a cycle."""
-        by_key = {n.key: n for n in nodes}
-        indegree: dict[str, int] = {n.key: 0 for n in nodes}
-        adjacency: dict[str, list[str]] = defaultdict(list)
-        for e in edges:
-            if e.source_key in by_key and e.target_key in by_key:
-                adjacency[e.source_key].append(e.target_key)
-                indegree[e.target_key] += 1
+    def _build_graph(
+        self, nodes: list[WorkflowNode], edges: list[WorkflowEdge]
+    ) -> WorkflowGraph:
+        """Map ORM rows onto the database-free graph the engine executes."""
+        return WorkflowGraph(
+            [GraphNode(key=n.key, type=n.type, config=n.config) for n in nodes],
+            [
+                GraphEdge(source=e.source_key, target=e.target_key, condition=e.condition)
+                for e in edges
+            ],
+        )
 
-        queue = deque(sorted(k for k, d in indegree.items() if d == 0))
-        ordered: list[WorkflowNode] = []
-        while queue:
-            key = queue.popleft()
-            ordered.append(by_key[key])
-            for nxt in sorted(adjacency[key]):
-                indegree[nxt] -= 1
-                if indegree[nxt] == 0:
-                    queue.append(nxt)
-        if len(ordered) != len(nodes):
-            raise WorkflowError("Workflow graph contains a cycle.")
-        return ordered
+    def _engine(self) -> WorkflowEngine:
+        """An engine carrying the handlers registered on this service.
+
+        Handlers take an ORM ``WorkflowNode`` for backwards compatibility, so
+        each is wrapped to accept the engine's plain ``GraphNode``.
+        """
+        engine = WorkflowEngine()
+        for node_type, handler in self._handlers.items():
+            engine.register(node_type, _adapt_handler(handler))
+        return engine
+
+    async def _record_outcomes(
+        self, execution: WorkflowExecution, outcomes: list[NodeOutcome]
+    ) -> None:
+        for outcome in outcomes:
+            self.session.add(
+                WorkflowNodeExecution(
+                    execution_id=execution.id,
+                    node_key=outcome.key,
+                    node_type=outcome.type,
+                    status=outcome.status,
+                    iteration=outcome.iteration,
+                    output=_jsonable(outcome.output),
+                    error=outcome.error,
+                    skip_reason=outcome.skip_reason,
+                )
+            )
+        await self.session.flush()
 
     async def execute(
         self, workflow_id: uuid.UUID, *, inputs: dict[str, Any] | None = None
     ) -> WorkflowExecution:
-        """Execute a workflow end to end, recording status and logs."""
+        """Execute a workflow end to end, recording status, logs and per-node rows."""
         workflow = await self.workflows.get(workflow_id)
         if workflow is None or workflow.deleted_at is not None:
             raise NotFoundError("Workflow not found.")
@@ -168,19 +222,28 @@ class WorkflowService:
         nodes, edges = await self._load_graph(workflow_id)
         context = dict(inputs or {})
         logs: list[dict[str, Any]] = []
+        outcomes: list[NodeOutcome] = []
         try:
-            for node in self._topological_order(nodes, edges):
-                handler = self._handlers.get(node.type, _noop_handler)
-                result = await handler(node, context)
-                context[node.key] = result
-                logs.append({"node": node.key, "status": "ok"})
+            graph = self._build_graph(nodes, edges)
+            context, outcomes = await self._engine().run(graph, context)
+            logs = [
+                {"node": o.key, "status": o.status, "iteration": o.iteration}
+                for o in outcomes
+            ]
             execution.status = WorkflowExecutionStatus.SUCCEEDED.value
+        except WorkflowError as exc:
+            execution.status = WorkflowExecutionStatus.FAILED.value
+            # The engine attaches the outcomes gathered before it stopped.
+            raw = (exc.details or {}).get("outcomes", [])
+            outcomes = [NodeOutcome(**item) for item in raw]
+            logs = [{"error": str(exc)}]
         except Exception as exc:
             execution.status = WorkflowExecutionStatus.FAILED.value
-            logs.append({"error": str(exc)})
+            logs = [{"error": str(exc)}]
         finally:
-            execution.context = context
+            execution.context = _jsonable(context)
             execution.logs = logs
             execution.finished_at = datetime.now(UTC)
             await self.session.flush()
+            await self._record_outcomes(execution, outcomes)
         return execution

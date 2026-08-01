@@ -15,6 +15,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, ClassVar
 
 from app.agents.tools.registry import AgentTool, ToolValidationError
+from app.core.workflow.expressions import ExpressionError, evaluate
 
 
 class CurrentTimeTool(AgentTool):
@@ -46,10 +47,12 @@ class CalculatorTool(AgentTool):
         if not expression or set(expression) - self._ALLOWED:
             raise ToolValidationError("Expression contains unsupported characters.")
         try:
-            # Safe: the character allow-list above forbids names, calls, and
-            # attribute access, leaving only arithmetic literals/operators.
-            result = eval(expression, {"__builtins__": {}}, {})
-        except (SyntaxError, ZeroDivisionError, ValueError) as exc:
+            # Parsed and walked rather than eval'd. The character allow-list
+            # blocks names and attribute access, but it still admits "**", and
+            # 9**9**9**9 passes it while hanging the worker indefinitely. The
+            # AST evaluator bounds the exponent instead.
+            result = evaluate(expression)
+        except ExpressionError as exc:
             raise ToolValidationError(f"Invalid expression: {exc}") from exc
         return str(result)
 

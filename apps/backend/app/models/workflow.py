@@ -6,11 +6,24 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
-from app.models.domain_enums import WorkflowExecutionStatus
+from app.models.domain_enums import (
+    NodeRunStatus,
+    TriggerKind,
+    WorkflowExecutionStatus,
+)
 from app.models.mixins import EntityMixin
 from app.models.types import GUID
 
@@ -71,6 +84,57 @@ class WorkflowEdge(EntityMixin, Base):
     condition: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     workflow: Mapped[Workflow] = relationship(back_populates="edges")
+
+
+class WorkflowTrigger(EntityMixin, Base):
+    """What starts a workflow: a person, a clock, or an event."""
+
+    workflow_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("workflow.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    kind: Mapped[str] = mapped_column(
+        String(16), default=TriggerKind.MANUAL.value, nullable=False, index=True
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=True
+    )
+    # Five-field cron expression when kind is "schedule".
+    cron: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    # Event name when kind is "event", matched against the internal bus.
+    event_type: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    # Advanced once fired, so a due trigger is not picked up twice.
+    last_fired_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class WorkflowNodeExecution(EntityMixin, Base):
+    """Per-node outcome of one run — what a visual editor renders."""
+
+    execution_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(),
+        ForeignKey("workflow_execution.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    node_key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    node_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(16), default=NodeRunStatus.PENDING.value, nullable=False, index=True
+    )
+    # Which loop pass this was; 0 for a node that runs once.
+    iteration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    output: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Set when the node was skipped, naming the condition that excluded it.
+    skip_reason: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
 
 class WorkflowExecution(EntityMixin, Base):

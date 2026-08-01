@@ -11,7 +11,7 @@ DB + tests + docs + Docker + CI) before the next begins.
 | **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting   | ✅ Done |
 | **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Done |
 | **06** | **Storage providers & catalog domain** — S3/MinIO/R2/GCS/Azure, billing, notifications, jobs                                                                                                               | ✅ Done |
-| 07     | Workflow engine (visual) — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                               | Planned |
+| **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | Planned |
 | 08     | Video pipeline — research → publish → analytics → learning                                                                                                                                                 | Planned |
 | 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned |
 | 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned |
@@ -104,3 +104,25 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
   `upgrade head` creates them all and `downgrade 0004_agent` removes them.
 - 45 service tests covering the quota, invoicing, refund, retry and state
   machine rules, and [Catalog.md](./Catalog.md).
+
+## Phase 07 — delivered
+
+- Edge conditions are now **evaluated**. `WorkflowEdge.condition` existed from
+  Phase 03 but was never read, so the executor ran every node regardless and an
+  authored condition had no effect. A false condition prunes the branch behind
+  it, skipping propagates to nodes reachable only through it, and a merge runs
+  if any branch survived.
+- Conditions are parsed to an AST and walked rather than `eval`'d. A character
+  allow-list around `eval` is not enough: one permitting `*` still admits
+  `9**9**9**9`, which passes the filter and then hangs the worker. The evaluator
+  bounds the exponent, length and nesting depth. The agent `CalculatorTool` had
+  that exact shape and now uses the same evaluator.
+- Independent nodes run concurrently by dependency level, loops expand over a
+  collection with the loop variables scoped to each pass, and every node writes a
+  `WorkflowNodeExecution` row — status, iteration, output, error, skip reason —
+  which is what a visual editor replays.
+- `WorkflowTrigger` starts runs manually, on a cron schedule, or from an internal
+  event, reusing the agent scheduler's cron matcher rather than a second
+  implementation.
+- Migration `0006_workflow`, 42 engine tests, and
+  [WorkflowEngine.md](./WorkflowEngine.md).

@@ -36,6 +36,31 @@ class WorkflowExecutionStatus(StrEnum):
     CANCELLED = "cancelled"
 
 
+class TriggerKind(StrEnum):
+    MANUAL = "manual"
+    SCHEDULE = "schedule"
+    EVENT = "event"
+
+
+class NodeRunStatus(StrEnum):
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    #: Excluded because no incoming edge condition was satisfied.
+    SKIPPED = "skipped"
+
+
+class NodeKind(StrEnum):
+    """Built-in node behaviours the engine understands directly."""
+
+    TASK = "task"
+    CONDITION = "condition"
+    LOOP = "loop"
+    PARALLEL = "parallel"
+    MERGE = "merge"
+
+
 class FeatureFlagScope(StrEnum):
     GLOBAL = "global"
     ORGANIZATION = "organization"

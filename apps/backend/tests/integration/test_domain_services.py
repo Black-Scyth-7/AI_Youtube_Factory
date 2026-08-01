@@ -14,6 +14,7 @@ from app.core.events import (
     WorkspaceCreated,
     set_event_bus,
 )
+from app.core.workflow import GraphEdge, GraphNode, WorkflowGraph
 from app.exceptions.base import WorkflowError
 from app.models.domain_enums import FeatureFlagScope, WorkflowExecutionStatus
 from app.services.content import ProjectService, VideoService, WorkspaceService
@@ -121,18 +122,18 @@ async def test_workflow_cycle_is_detected(session: AsyncSession) -> None:
     assert any("cycle" in str(entry).lower() for entry in execution.logs)
 
 
-async def test_topological_order_raises_directly() -> None:
-    with pytest.raises(WorkflowError):
-        WorkflowService._topological_order(
-            nodes=[
-                type("N", (), {"key": "a"})(),
-                type("N", (), {"key": "b"})(),
-            ],
-            edges=[
-                type("E", (), {"source_key": "a", "target_key": "b"})(),
-                type("E", (), {"source_key": "b", "target_key": "a"})(),
-            ],
-        )
+async def test_cycle_detection_raises_directly() -> None:
+    """Ordering moved from WorkflowService onto the engine's graph in Phase 07.
+
+    The behaviour this covered — a cyclic graph is rejected rather than looping
+    — still matters, so it is asserted against its new home.
+    """
+    graph = WorkflowGraph(
+        [GraphNode("a", "noop"), GraphNode("b", "noop")],
+        [GraphEdge("a", "b"), GraphEdge("b", "a")],
+    )
+    with pytest.raises(WorkflowError, match="cycle"):
+        graph.levels()
 
 
 async def test_feature_flag_scopes(session: AsyncSession) -> None:
