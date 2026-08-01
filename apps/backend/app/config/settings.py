@@ -201,6 +201,14 @@ class Settings(BaseSettings):
     pipeline_analytics_provider: str = Field(default="mock")
     pipeline_default_voice: str = Field(default="default")
 
+    # -- Payments ---------------------------------------------------------
+    # "mock" settles every charge in process, so billing runs without an
+    # account. A real provider also needs PAYMENT_WEBHOOK_SECRET: callbacks
+    # move money, and an unverified one is an unauthenticated request to do so.
+    payment_provider: str = Field(default="mock")
+    payment_webhook_secret: str = Field(default="")
+    payment_currency: str = Field(default="USD", min_length=3, max_length=3)
+
     # -- Observability ----------------------------------------------------
     # /metrics serves internal counters, which describe traffic shape and
     # failure rates. Reachable from the public internet it is reconnaissance,

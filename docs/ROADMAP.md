@@ -14,7 +14,7 @@ DB + tests + docs + Docker + CI) before the next begins.
 | **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | ✅ Done |
 | **08** | **Video pipeline** — research → script → render → publish → analytics → learning                                                                                                                           | ✅ Done |
 | **09** | **Observability** — metrics, W3C tracing, OpenTelemetry export, Prometheus, Grafana, alerting                                                                                                              | ✅ Done |
-| 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned |
+| 10     | **Billing** ✅ · plugin ecosystem, public API, mobile                                                                                                                                                      | Partial |
 
 ## Phase 04 — delivered
 
@@ -176,3 +176,34 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
 - `/metrics` is guarded by `METRICS_TOKEN` (compared in constant time) for
   deployments that cannot restrict it at the network layer.
 - 72 tests and [Observability.md](./Observability.md).
+
+## Phase 10 — in progress
+
+**Billing — delivered.** Phase 06 left the models and services with no way to
+reach them; there was no billing API at all.
+
+- A `PaymentProvider` Protocol — charge, refund, verify webhook — with a
+  registry and a deterministic mock, the same shape as the LLM, storage, and
+  pipeline abstractions. Billing runs offline and CI needs no account. The
+  mock's ids are derived from the request rather than random, so the
+  idempotency downstream is genuinely exercised; its declines are reachable on
+  demand, because the interesting billing code is the failure path.
+- Eight endpoints: the public plan catalogue, subscribe/cancel, usage against
+  quota, invoices, pay, refund, and the provider callback. Split
+  `billing.read` from `billing.manage` — seeing the bill is not the same as
+  being able to change the plan.
+- **A decline answers 200**, not an error: the request was handled correctly and
+  the caller needs the reason rather than something to retry against a card that
+  will keep failing.
+- **Callbacks are verified over the raw body** before anything is read out of
+  them; a bad signature is 401 and an empty secret fails closed. A replayed
+  event is a no-op that still answers 204, because a provider that gets an error
+  for an event already handled retries forever.
+- Two bugs caught while wiring the routes: the cancel endpoint passed an
+  organization id to a service that cancels by *subscription* id, which would
+  have 404'd every time; and the subscription schema spelled `canceled_at` where
+  the model spells `cancelled_at` — with `from_attributes` that does not error,
+  the field just stays null forever.
+- A `/dashboard/billing` console, 35 tests, and [Billing.md](./Billing.md).
+
+**Remaining in this phase:** plugin ecosystem, public API, mobile.

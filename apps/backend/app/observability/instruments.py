@@ -138,6 +138,23 @@ storage_operation_duration_seconds = histogram(
     DEFAULT_BUCKETS,
 )
 
+# -- Payments -----------------------------------------------------------------
+payments_total = counter(
+    "payments_total",
+    "Payment attempts, by provider and outcome (succeeded/declined/refunded).",
+    ("provider", "outcome"),
+)
+payments_collected_cents_total = counter(
+    "payments_collected_cents_total",
+    "Money successfully collected, in minor units, by provider.",
+    ("provider",),
+)
+payment_webhooks_total = counter(
+    "payment_webhooks_total",
+    "Verified provider callbacks, by provider and event type.",
+    ("provider", "event_type"),
+)
+
 # -- Application --------------------------------------------------------------
 app_info = gauge(
     "app_info",

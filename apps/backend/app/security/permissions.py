@@ -16,6 +16,7 @@ PERMISSIONS: dict[str, str] = {
     "member.manage": "Invite, remove, and change member roles",
     "team.manage": "Create and manage teams",
     "role.manage": "Create and manage custom roles",
+    "billing.read": "View plans, invoices, and usage",
     "billing.manage": "Manage billing and subscriptions",
     "project.create": "Create projects",
     "project.delete": "Delete projects",
@@ -46,6 +47,9 @@ _MANAGER_PERMISSIONS = frozenset(
         "agent.run",
         "agent.manage",
         "analytics.read",
+        # Seeing the bill is not the same as being able to change the plan; a
+        # manager spending the quota needs to know how much is left.
+        "billing.read",
     }
 )
 

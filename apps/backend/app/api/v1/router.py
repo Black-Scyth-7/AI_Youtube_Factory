@@ -8,6 +8,7 @@ from app.api.v1.routes import (
     agents,
     api_keys,
     auth,
+    billing,
     content,
     feature_flags,
     health,
@@ -32,3 +33,4 @@ api_v1_router.include_router(content.router)
 api_v1_router.include_router(feature_flags.router)
 api_v1_router.include_router(llm.router)
 api_v1_router.include_router(agents.router)
+api_v1_router.include_router(billing.router)

@@ -138,6 +138,7 @@ make docker-down  # stop stack
 - [Catalog.md](docs/Catalog.md) — billing, notifications, and jobs
 - [VideoPipeline.md](docs/VideoPipeline.md) — research → script → render → publish → analytics
 - [Observability.md](docs/Observability.md) — metrics, tracing, Prometheus, Grafana, alerting
+- [Billing.md](docs/Billing.md) — plans, subscriptions, quotas, invoices, payments
 - [API.md](docs/API.md) — AI API reference (agents + LLM)
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
