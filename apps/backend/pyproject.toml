@@ -42,6 +42,11 @@ dev = [
 ]
 # Cloud storage SDKs are optional: the default local backend needs none of them,
 # and a deployment installs only the one it actually uses.
+# Tracing works without these; they are only needed to export spans over OTLP.
+otel = [
+    "opentelemetry-sdk>=1.29",
+    "opentelemetry-exporter-otlp-proto-http>=1.29",
+]
 s3 = ["aioboto3>=13.2"]
 gcs = ["google-cloud-storage>=2.18"]
 azure = ["azure-storage-blob>=12.23", "azure-identity>=1.19"]

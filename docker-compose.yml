@@ -5,6 +5,10 @@
 # Starts PostgreSQL, Redis, RabbitMQ, the FastAPI backend, the Celery worker,
 # and the Next.js frontend + admin apps. Health checks gate service start-up so
 # dependent services only boot once their dependencies are ready.
+#
+# Prometheus and Grafana are behind a profile:
+#
+#   docker compose --profile observability up
 
 name: ai-youtube-factory
 
@@ -139,6 +143,56 @@ services:
       - backend
     networks: [ayf]
 
+  # -- Observability ---------------------------------------------------------
+  # Behind a profile, so `docker compose up` stays the application stack:
+  #
+  #   docker compose --profile observability up
+  #
+  # Prometheus on :9090, Grafana on :3002 (admin/admin) with the datasource and
+  # dashboards already provisioned.
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    profiles: [observability]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [ayf]
+
+  grafana:
+    image: grafana/grafana:11.5.1
+    profiles: [observability]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      # Local-only convenience: the dashboards carry no secrets, and requiring
+      # a login to read a development dashboard helps nobody.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      # 3000 and 3001 are the frontend and admin apps.
+      - "${GRAFANA_PORT:-3002}:3000"
+    depends_on:
+      prometheus: { condition: service_healthy }
+    networks: [ayf]
+
 networks:
   ayf:
     driver: bridge
@@ -148,3 +202,5 @@ volumes:
   redis_data:
   rabbitmq_data:
   minio_data:
+  prometheus_data:
+  grafana_data:

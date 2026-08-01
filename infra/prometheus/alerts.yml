@@ -1,0 +1,104 @@
+# Alert rules.
+#
+# Each alert is on a symptom a user would notice — errors, latency, a stalled
+# pipeline — rather than on a cause. Cause-based alerts (CPU is high, a queue is
+# long) fire during healthy traffic spikes and get silenced, which is how a
+# noisy rule becomes a missed outage.
+#
+# `for:` durations are deliberately longer than one scrape interval so a single
+# bad scrape cannot page anyone.
+
+groups:
+  - name: api
+    rules:
+      - alert: HighServerErrorRate
+        expr: |
+          sum(rate(http_requests_total{status="5xx"}[5m]))
+            / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Over 5% of requests are failing
+          description: >-
+            {{ $value | humanizePercentage }} of requests returned 5xx over the
+            last 5 minutes.
+
+      - alert: HighRequestLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, route) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: p95 latency above 2s on {{ $labels.route }}
+          description: The 95th percentile is {{ $value | humanizeDuration }}.
+
+      - alert: BackendDown
+        # `up` is synthesised by Prometheus per target, so this fires when the
+        # scrape itself fails — the case no application metric can report.
+        expr: up{job="ai-youtube-factory-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: The backend is not responding to scrapes
+
+      - alert: MetricsCardinalityCapped
+        # The registry drops new series past its cap, so a metric sitting at the
+        # ceiling means something is being labelled with an unbounded value.
+        expr: count by (__name__) ({__name__=~"http_requests_total"}) >= 2000
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: A metric has hit its series cap
+          description: Check for a label carrying an id or a raw path.
+
+  - name: pipeline
+    rules:
+      - alert: PipelineStageFailures
+        expr: |
+          sum by (stage) (rate(pipeline_stages_total{outcome="failed"}[15m])) > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Pipeline stage {{ $labels.stage }} is failing
+          description: Sustained failures for at least 15 minutes.
+
+      - alert: WorkflowRunsStuck
+        # Runs in flight but none finishing: the engine is blocked rather than
+        # slow, which no duration percentile would show.
+        expr: |
+          workflow_runs_in_progress > 0
+            and rate(workflow_runs_total[30m]) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: Workflow runs are in flight but none are completing
+
+  - name: cost
+    rules:
+      - alert: LLMSpendSpike
+        expr: sum(rate(llm_cost_usd_total[1h])) * 3600 > 50
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: LLM spend above $50/hour
+          description: Currently ${{ $value | printf "%.2f" }} per hour.
+
+      - alert: LLMErrorRate
+        expr: |
+          sum(rate(llm_requests_total{outcome="error"}[10m]))
+            / sum(rate(llm_requests_total[10m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Over 10% of LLM requests are failing

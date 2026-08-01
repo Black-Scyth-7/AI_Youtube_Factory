@@ -15,6 +15,7 @@ from typing import Any
 from app.core.llm.messages import Usage
 from app.core.llm.models import estimate_cost
 from app.logging import get_logger
+from app.observability import instruments
 
 logger = get_logger("app.llm.metrics")
 
@@ -58,6 +59,24 @@ def record_request(
     }
     if extra:
         payload.update(extra)
+
+    # Same numbers, exported for scraping. The log record answers "what
+    # happened to this request"; the counters answer "what is spend doing".
+    outcome = "error" if error else "cache_hit" if cache_hit else "success"
+    instruments.llm_requests_total.inc(
+        1.0, provider=provider, model=model, outcome=outcome
+    )
+    instruments.llm_request_duration_seconds.observe(
+        latency_ms / 1000, provider=provider, model=model
+    )
+    instruments.llm_tokens_total.inc(
+        usage.input_tokens, provider=provider, model=model, direction="input"
+    )
+    instruments.llm_tokens_total.inc(
+        usage.output_tokens, provider=provider, model=model, direction="output"
+    )
+    instruments.llm_cost_usd_total.inc(cost, provider=provider, model=model)
+
     if error:
         payload["error"] = error
         logger.error("llm.request.failed", extra=payload)

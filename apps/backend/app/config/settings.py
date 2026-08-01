@@ -24,6 +24,8 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+from app.__version__ import __version__
+
 _POSTGRES_DSN = TypeAdapter(PostgresDsn)
 _REDIS_DSN = TypeAdapter(RedisDsn)
 
@@ -198,6 +200,23 @@ class Settings(BaseSettings):
     pipeline_publish_provider: str = Field(default="mock")
     pipeline_analytics_provider: str = Field(default="mock")
     pipeline_default_voice: str = Field(default="default")
+
+    # -- Observability ----------------------------------------------------
+    # /metrics serves internal counters, which describe traffic shape and
+    # failure rates. Reachable from the public internet it is reconnaissance,
+    # so a deployment that cannot restrict it at the network layer should set
+    # METRICS_TOKEN and scrape with `Authorization: Bearer <token>`.
+    metrics_enabled: bool = Field(default=True)
+    metrics_path: str = Field(default="/metrics")
+    metrics_token: str = Field(default="")
+
+    # Tracing works without any of this; these only control OTLP export, which
+    # needs the optional extra: pip install -e ".[otel]"
+    otel_enabled: bool = Field(default=False)
+    otel_service_name: str = Field(default="ai-youtube-factory-api")
+    otel_service_version: str = Field(default=__version__)
+    otel_exporter_endpoint: str = Field(default="")
+    otel_sample_ratio: float = Field(default=1.0, ge=0.0, le=1.0)
 
     # -- Web / links ------------------------------------------------------
     frontend_url: str = Field(default="http://localhost:3000")

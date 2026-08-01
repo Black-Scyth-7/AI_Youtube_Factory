@@ -36,6 +36,7 @@ from app.models.pipeline import (
     ResearchNote,
 )
 from app.models.video import Video, VideoVersion
+from app.observability.stages import record_artifact_size, track_stage
 from app.repositories.base import BaseRepository
 from app.services.billing import UsageService
 
@@ -116,6 +117,11 @@ class VideoPipelineService:
             # Reassigned rather than mutated: SQLAlchemy does not track in-place
             # changes to a JSON dict.
             run.artifacts = {**run.artifacts, **artifacts}
+            # Every stage funnels its artifact through here, so sizes are
+            # recorded once instead of in each stage that happens to remember.
+            for name, artifact in artifacts.items():
+                if isinstance(artifact, dict):
+                    record_artifact_size(name, artifact.get("size_bytes"))
         if stage in (PipelineStage.DONE.value, PipelineStage.FAILED.value):
             run.finished_at = datetime.now(UTC)
         await self.session.flush()
@@ -155,6 +161,7 @@ class VideoPipelineService:
         await self.session.flush()
         return created
 
+    @track_stage("research")
     async def research(self, run: PipelineRun) -> PipelineRun:
         """Close the research stage, recording how much was gathered."""
         stmt = select(ResearchNote).where(
@@ -166,6 +173,7 @@ class VideoPipelineService:
         )
         return run
 
+    @track_stage("script")
     async def script(self, run: PipelineRun, script: str) -> VideoVersion:
         """Attach a script as a new version and make it current."""
         if not script.strip():
@@ -191,6 +199,7 @@ class VideoPipelineService:
         )
         return version
 
+    @track_stage("voiceover")
     async def voiceover(
         self, run: PipelineRun, *, voice: str | None = None
     ) -> dict[str, Any]:
@@ -214,6 +223,7 @@ class VideoPipelineService:
         await self._advance(run, PipelineStage.RENDER.value, voiceover=artifact)
         return artifact
 
+    @track_stage("render")
     async def render(
         self, run: PipelineRun, *, options: dict[str, Any] | None = None
     ) -> dict[str, Any]:
@@ -253,6 +263,7 @@ class VideoPipelineService:
             )
         return artifact
 
+    @track_stage("publish")
     async def publish(
         self,
         run: PipelineRun,
@@ -318,6 +329,7 @@ class VideoPipelineService:
         )
         return publication
 
+    @track_stage("analytics")
     async def collect_analytics(
         self, publication_id: uuid.UUID, *, on: date | None = None
     ) -> AnalyticsRecord:
@@ -351,6 +363,7 @@ class VideoPipelineService:
         await self.session.flush()
         return record
 
+    @track_stage("learn")
     async def learn(
         self, run: PipelineRun, *, ctr_target: float = 0.05
     ) -> list[PerformanceLesson]:

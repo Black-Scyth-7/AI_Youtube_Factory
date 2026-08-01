@@ -11,9 +11,9 @@ DB + tests + docs + Docker + CI) before the next begins.
 | **04** | **Claude LLM framework** — provider abstraction, prompt engine, conversation memory, structured output, streaming, tools, retry/circuit-breaker, token accounting, cost tracking, caching, rate limiting   | ✅ Done |
 | **05** | **AI agent framework** — BaseAgent, manager, registry, planner, reasoner, executor, reflection, evaluation, memory, knowledge, tools, policies, scheduler, workflows, multi-agent coordination, monitoring | ✅ Done |
 | **06** | **Storage providers & catalog domain** — S3/MinIO/R2/GCS/Azure, billing, notifications, jobs                                                                                                               | ✅ Done |
-| **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | Planned |
-| **08** | **Video pipeline** — research → script → render → publish → analytics → learning                                                                                                                           | Planned |
-| 09     | Observability — OpenTelemetry, Prometheus, Grafana, tracing                                                                                                                                                | Planned |
+| **07** | **Workflow engine** — triggers, conditions, loops, parallel/merge, scheduler on the Phase 03 foundation                                                                                                    | ✅ Done |
+| **08** | **Video pipeline** — research → script → render → publish → analytics → learning                                                                                                                           | ✅ Done |
+| **09** | **Observability** — metrics, W3C tracing, OpenTelemetry export, Prometheus, Grafana, alerting                                                                                                              | ✅ Done |
 | 10     | Billing, plugin ecosystem, public API, mobile                                                                                                                                                              | Planned |
 
 ## Phase 04 — delivered
@@ -145,3 +145,34 @@ See [AgentFramework.md](./AgentFramework.md), [Planning.md](./Planning.md),
 - `PerformanceLesson` closes the loop with explainable observations an agent can
   consult when planning the next video.
 - Migration `0007_pipeline`, 26 tests, and [VideoPipeline.md](./VideoPipeline.md).
+
+## Phase 09 — delivered
+
+- **Metrics** at `GET /metrics` in the Prometheus text format, covering HTTP,
+  LLM spend and tokens, pipeline stages, workflow nodes, and storage. The
+  registry is written in process rather than pulled in: `prometheus_client`'s
+  global registry does not survive a test suite that builds the application
+  twice, since the second definition of a metric aborts the process.
+- **Cardinality is bounded by construction.** HTTP metrics are labelled by the
+  matched route template, never the request path, so `/agents/{slug}` is one
+  series rather than one per agent; unmatched requests share a single series, so
+  a 404 probe sweep cannot create one per probed path. Every metric also caps
+  itself at 2000 series and logs once on overflow — losing a label value beats
+  losing the process.
+- **Tracing** follows W3C Trace Context. An inbound `traceparent` continues the
+  caller's trace, spans nest through a context variable, and each completed span
+  is logged, so traces are usable with no collector running. Installing the
+  `[otel]` extra and setting `OTEL_ENABLED` additionally exports over OTLP; a
+  missing SDK warns and keeps serving rather than refusing to start.
+- **Two bugs found on the way in.** The access log was emitted after a `finally`
+  that had already cleared the request context, so every *successful* request
+  logged a null request id — the one field that makes an access log searchable;
+  failures were unaffected, which is why it went unnoticed. And `X-Trace-ID` was
+  generated separately from the span, so the two correlation headers on the same
+  response named different traces.
+- **Prometheus and Grafana** behind a compose profile, with a provisioned
+  datasource, two dashboards, and 8 alert rules — all on symptoms rather than
+  causes, and all validated with `promtool`.
+- `/metrics` is guarded by `METRICS_TOKEN` (compared in constant time) for
+  deployments that cannot restrict it at the network layer.
+- 72 tests and [Observability.md](./Observability.md).

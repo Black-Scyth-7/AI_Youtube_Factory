@@ -41,14 +41,20 @@ register_storage(StorageProvider.AZURE, create_azure_storage)
 
 
 def get_storage() -> StorageClient:
-    """Return a storage client for the configured backend."""
+    """Return an instrumented storage client for the configured backend.
+
+    Instrumentation is added here rather than in the factory so that
+    ``create_storage_client`` keeps returning the concrete provider type.
+    """
     from typing import cast
 
     from app.config import settings
+    from app.core.storage.metered import MeteredStorageClient
 
+    backend = StorageProvider(settings.storage_backend)
     return cast(
         StorageClient,
-        create_storage_client(StorageProvider(settings.storage_backend)),
+        MeteredStorageClient(create_storage_client(backend), backend.value),
     )
 
 

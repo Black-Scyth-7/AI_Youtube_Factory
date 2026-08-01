@@ -12,6 +12,7 @@ and tested on plain dataclasses. The service layer maps ORM rows onto these.
 from __future__ import annotations
 
 import asyncio
+import time
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict, dataclass, field
@@ -20,6 +21,8 @@ from typing import Any, Final
 from app.core.workflow.expressions import evaluate, evaluate_condition
 from app.exceptions.base import WorkflowError
 from app.models.domain_enums import NodeKind, NodeRunStatus
+from app.observability import instruments
+from app.observability.tracing import start_span
 
 #: Ceiling on loop passes, so a mis-authored loop cannot run forever.
 MAX_LOOP_ITERATIONS: Final = 1000
@@ -160,6 +163,34 @@ class WorkflowEngine:
         outcomes: list[NodeOutcome] = []
         skipped: set[str] = set()
 
+        instruments.workflow_runs_in_progress.inc()
+        started = time.perf_counter()
+        outcome_label = "failed"
+        try:
+            with start_span(
+                "workflow.run", attributes={"workflow.nodes": len(graph.nodes)}
+            ):
+                await self._run_levels(graph, run_context, outcomes, skipped)
+            outcome_label = "succeeded"
+            return run_context, outcomes
+        finally:
+            # In a finally so an exception on any path still closes the gauge
+            # and records the run; a workflow that fails is exactly the one a
+            # dashboard needs to show.
+            instruments.workflow_runs_in_progress.dec()
+            instruments.workflow_runs_total.inc(1.0, outcome=outcome_label)
+            instruments.workflow_run_duration_seconds.observe(
+                time.perf_counter() - started
+            )
+
+    async def _run_levels(
+        self,
+        graph: WorkflowGraph,
+        run_context: dict[str, Any],
+        outcomes: list[NodeOutcome],
+        skipped: set[str],
+    ) -> None:
+        """Execute the graph level by level, accumulating outcomes in place."""
         for level in graph.levels():
             runnable: list[GraphNode] = []
             for node in level:
@@ -168,6 +199,9 @@ class WorkflowEngine:
                     runnable.append(node)
                 else:
                     skipped.add(node.key)
+                    instruments.workflow_nodes_total.inc(
+                        1.0, node_type=node.type, outcome="skipped"
+                    )
                     outcomes.append(
                         NodeOutcome(
                             key=node.key,
@@ -187,6 +221,9 @@ class WorkflowEngine:
             )
             for node, result in zip(runnable, results, strict=True):
                 if isinstance(result, BaseException):
+                    instruments.workflow_nodes_total.inc(
+                        1.0, node_type=node.type, outcome="failed"
+                    )
                     outcomes.append(
                         NodeOutcome(
                             key=node.key,
@@ -201,10 +238,11 @@ class WorkflowEngine:
                         # __dict__, which does not exist on a slotted class.
                         details={"outcomes": [asdict(o) for o in outcomes]},
                     ) from result
+                instruments.workflow_nodes_total.inc(
+                    1.0, node_type=node.type, outcome="succeeded"
+                )
                 outcomes.extend(result)
                 run_context[node.key] = result[-1].output if result else None
-
-        return run_context, outcomes
 
     async def _run_node(
         self, node: GraphNode, context: dict[str, Any]
@@ -214,7 +252,11 @@ class WorkflowEngine:
             return await self._run_loop(node, context)
 
         handler = self._handler_for(node)
-        output = await handler(node, context)
+        with start_span(
+            f"workflow.node.{node.type}",
+            attributes={"workflow.node.key": node.key},
+        ):
+            output = await handler(node, context)
         return [
             NodeOutcome(
                 key=node.key,

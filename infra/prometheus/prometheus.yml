@@ -1,0 +1,31 @@
+# Prometheus scrape configuration for the local stack.
+#
+# Only the backend is scraped: PostgreSQL, Redis, and RabbitMQ need their own
+# exporters, which are deliberately not part of the local stack — they add
+# three containers to teach nothing this project owns.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: development
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: ai-youtube-factory-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend:8000"]
+        labels:
+          service: backend
+    # Set METRICS_TOKEN in the backend's environment and uncomment to scrape a
+    # deployment whose metrics endpoint is not restricted at the network layer.
+    # authorization:
+    #   type: Bearer
+    #   credentials_file: /etc/prometheus/scrape_token
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -68,6 +68,17 @@ docker compose up --build
 - Admin → http://localhost:3001
 - API docs (Swagger) → http://localhost:8000/docs · ReDoc → /redoc
 - Health → http://localhost:8000/api/v1/health · Readiness → /ready
+- Metrics → http://localhost:8000/metrics (Prometheus exposition format)
+
+Prometheus and Grafana are behind a profile, so they stay out of the default
+stack:
+
+```bash
+docker compose --profile observability up
+```
+
+- Prometheus → http://localhost:9090
+- Grafana → http://localhost:3002 — datasource and dashboards pre-provisioned
 
 ### Local (without Docker)
 
@@ -115,6 +126,11 @@ make docker-down  # stop stack
 - [Tools.md](docs/Tools.md) — agent tool framework & execution policies
 - [Knowledge.md](docs/Knowledge.md) — agent knowledge base
 - [Workflow.md](docs/Workflow.md) — agent workflow runtime
+- [WorkflowEngine.md](docs/WorkflowEngine.md) — the execution engine: conditions, loops, parallelism
+- [Storage.md](docs/Storage.md) — storage providers: local, S3, MinIO, R2, GCS, Azure
+- [Catalog.md](docs/Catalog.md) — billing, notifications, and jobs
+- [VideoPipeline.md](docs/VideoPipeline.md) — research → script → render → publish → analytics
+- [Observability.md](docs/Observability.md) — metrics, tracing, Prometheus, Grafana, alerting
 - [API.md](docs/API.md) — AI API reference (agents + LLM)
 - [CODE_STYLE.md](docs/CODE_STYLE.md) — coding standards
 - [CONTRIBUTING.md](CONTRIBUTING.md) — workflow & conventional commits
