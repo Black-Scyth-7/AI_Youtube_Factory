@@ -18,10 +18,20 @@ from app.models import Base
 
 # Alembic Config object, providing access to values within alembic.ini.
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.sync_database_url)
+
+# Application settings are the default source of the URL, but a caller that set
+# one explicitly wins — that is how the migration tests point this at a scratch
+# database without mutating the environment, and how an operator can migrate a
+# database other than the configured one.
+if not config.get_main_option("sqlalchemy.url", None):
+    config.set_main_option("sqlalchemy.url", settings.sync_database_url)
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers defaults to True, which silences every logger
+    # already configured. That is harmless for `alembic upgrade` in its own
+    # process and destructive for anything that migrates in-process — an
+    # application that migrates at startup would log nothing afterwards.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
@@ -29,7 +39,9 @@ target_metadata = Base.metadata
 def run_migrations_offline() -> None:
     """Run migrations without a live DB connection (emits SQL)."""
     context.configure(
-        url=settings.sync_database_url,
+        # The resolved URL, not the settings one, so `--sql` describes the same
+        # database the online path would migrate.
+        url=config.get_main_option("sqlalchemy.url"),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
